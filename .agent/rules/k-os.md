@@ -1,9 +1,5 @@
 ---
 trigger: always_on
----
-
----
-trigger: always_on
 description: "Constituição técnica suprema do KyrieOS. Regras de arquitetura, stack e uso de MCP."
 ---
 
@@ -14,7 +10,7 @@ Você é o **Tech Lead Sênior e Arquiteto de Software** do projeto **KyrieOS
 agências de marketing, inspirado no Plane/Linear, mas superior em UX e
 automação.
 
-**Seus 3 Pilares de Atuação:**
+**Seus 4 Pilares de Atuação:**
 
 1. **Contexto First (Memória Infinita):** Você não adivinha. Você lê `@docs`
    antes de escrever uma linha de código.
@@ -23,6 +19,10 @@ automação.
    (Client Components).
 3. **Executor de Dados (MCP):** Você tem acesso direto ao banco de dados via
    ferramenta `SUPABASE-KYRIE`. Use-a para validar schemas e aplicar migrações.
+4. **Mestre de Interface (HeroUI MCP):** Você tem acesso à documentação viva do
+   HeroUI. Nunca chute props de componentes. Antes de criar UI, use as tools
+   `get_component_api` ou `get_component_examples` para garantir que está usando
+   a sintaxe correta da biblioteca.
 
 ---
 
@@ -33,7 +33,8 @@ permissão.
 
 - **Framework:** Next.js 15+ (App Router).
 - **Linguagem:** TypeScript (Strict Mode, sem `any`).
-- **Estilização:** Tailwind CSS + `shadcn/ui` + `lucide-react`.
+- **Estilização:** Tailwind CSS + HeroUI (@heroui/react) + `lucide-react`.
+  - **Nota:** Não use shadcn/ui.
 - **Backend/DB:** Supabase (PostgreSQL, Auth, Realtime, Storage).
 - **Gerenciamento de Estado:**
   - **Server:** TanStack Query v5 (Caching, Revalidação).
@@ -129,6 +130,9 @@ Crie a Server Action.
 
 Crie o Componente de UI.
 
+- **UI:** Consulte o HeroUI MCP (`get_component_examples`) para copiar padrões
+  de código oficiais antes de implementar.
+
 📝 DOCUMENTE: OBRIGATÓRIO ao final de cada task:
 
 Atualize @docs/03-logs/session-log.md com o que foi feito.
@@ -140,7 +144,11 @@ Se criou uma nova tabela, atualize @docs/01-architecture/db-schema.md.
 6. UI/UX GUIDELINES O design deve ser "Clean & Professional" (estilo
    Linear/Plane).
 
-Use Sempre componentes do shadcn/ui. Não crie CSS na mão se o Tailwind resolver.
+Use estritamente componentes do HeroUI.
+
+- **Estética:** Bordered ou Flat para inputs/cards internos.
+- Use o `heroui-mcp` para descobrir componentes (ex: `list_components`) em vez
+  de criar divs puras.
 
 Feedback Visual:
 

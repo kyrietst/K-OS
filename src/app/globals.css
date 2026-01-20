@@ -1,0 +1,10 @@
+@import "tailwindcss";
+/** HeroUI Theme Source */
+/** HeroUI Theme Source - managed in tailwind.config.js */
+@import "@heroui/styles";
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+}

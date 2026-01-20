@@ -16,10 +16,10 @@ de alta performance.
 Este projeto deve seguir estritamente as seguintes tecnologias. Não devem ser
 introduzidas bibliotecas externas sem necessidade explícita.
 
-- **Frontend Framework:** Next.js 14+ (App Router).
+- **Frontend Framework:** Next.js 16+ (App Router, Turbopack).
 - **Linguagem:** TypeScript (Strict Mode).
-- **Estilização:** Tailwind CSS.
-- **Componentes UI:** shadcn/ui (Radix UI por baixo).
+- **Estilização:** Tailwind CSS v4 (Native CSS variables).
+- **Componentes UI:** HeroUI v3 Beta (Compound Components) + shadcn/ui.
 - **Ícones:** Lucide React.
 - **Backend & Database:** Supabase (PostgreSQL, Auth, Realtime, Storage).
 - **Gerenciamento de Estado Global:** Zustand.
@@ -176,9 +176,15 @@ Para não confundir a IA, peça uma fase de cada vez:
 2. **Fase 1:** Modelagem do Banco de Dados no Supabase (Migrations) e setup de
    Autenticação.
 3. **Fase 2:** Layout Shell (Sidebar, Header, criação de Workspaces e Projetos).
-4. **Fase 3:** CRUD de Issues (Criar, Editar, Deletar) em modo Lista.
-5. **Fase 4:** Implementação do Kanban Board (Drag and Drop) e Realtime.
-6. **Fase 5:** Implementação de Cycles e Modules.
+4. **Fase 3 [COMPLETA]:** Project Management (Create/List) + CRUD de Issues
+   (Listagem e Criação).
+   - [x] Create/List Workspaces
+   - [x] Create/List Projects
+   - [x] Create/List Issues (Sequential IDs)
+5. **Fase 4 [COMPLETA]:** Detalhes de Issues (Edição/Deleção) + Kanban Board.
+6. **Fase 5 [COMPLETA]:** Implementação de Cycles (Sprints).
+7. **Fase 6 [COMPLETA]:** Implementação de Modules (Epics).
+8. **Fase 7 [COMPLETA]:** Analytics Dashboard (Overview).
 
 ---
 

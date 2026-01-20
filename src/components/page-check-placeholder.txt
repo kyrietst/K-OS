@@ -1,0 +1,67 @@
+import { createClient } from '@/lib/supabase/server'
+import { notFound } from 'next/navigation'
+import IssueList from '@/components/issues/issue-list'
+import CreateIssueModal from '@/components/issues/create-issue-modal'
+import KanbanBoard from '@/components/kanban/kanban-board'
+import { Link, Button, Chip } from '@heroui/react'
+import IssueDetailsModal from '@/components/issues/issue-details-modal'
+import CreateCycleModal from '@/components/cycles/create-cycle-modal'
+import CreateModuleModal from '@/components/modules/create-module-modal'
+import { useState } from 'react'
+import ClientPage from './client-page'
+
+// We need to move the clientside interaction logic (useState for modals) to a client component
+// providing the data from server. 
+// OR simpler: render modals as client components that are always mounted but controlled? 
+// Actually create-issue-modal uses external control? Check usage. 
+// `CreateIssueModal` takes isOpen and onClose.
+// Server Component cannot use useState. 
+// Refactor: We should use a Client Component wrapper for the page interaction parts OR 
+// Keep it simple: Passing `isCreateIssueOpen` via URL? No.
+// Inspecting: Previous `page.tsx` had `const [isCreateIssueOpen, setIsCreateIssueOpen] = useState(false)`?
+// WAit. `page.tsx` is `export default async function`. IT IS A SERVER COMPONENT.
+// It CANNOT HAVE `useState`.
+// My previous `create-issue-modal` usage in `page.tsx` (viewed in step 345) showed:
+// `<CreateIssueModal isOpen={isCreateIssueOpen} ... />`
+// BUT where was `isCreateIssueOpen` defined?
+// Ah, looking at `page.tsx` in step 345... I DON'T SEE `useState` imported or used. 
+// Wait, create-issue-modal typically manages its own state or uses a button trigger?
+// Let's check `CreateIssueModal` implementation again.
+// In `step 257`, `CreateCycleModal` was refactored to separate dialog and trigger.
+// `CreateIssueModal` from `view_file` (step 257) showed it USES `useActionState` but `create-issue-modal.tsx` might accept `isOpen`?
+// Let's check `d:\1. LUCCAS\aplicativos ai\KyrieOS\src\components\issues\create-issue-modal.tsx` content if possible.
+// Actually, in `step 257-260` we refactored `CreateCycleModal`.
+// `CreateIssueModal` was likely NOT refactored to be just a trigger button.
+// If `page.tsx` is Server Component, it cannot control `isCreateIssueOpen`.
+// SOLUTION: I will create a `PageClientWrapper` or similar, OR refactor `CreateIssueModal` to Self-Manage with a Trigger.
+// The user said "Execute in one attack".
+// I'll check `CreateIssueModal` source.
+// If it needs `isOpen` prop, I need a client wrapper.
+// I'll check `page.tsx` original content (before my edits today).
+// Step 345 shows lines 4: `import CreateIssueModal from ...`.
+// Line 127: `<Button onPress={() => setIsCreateIssueOpen(true)} ...>`
+// Line 112 etc... 
+// THIS IMPLIES `page.tsx` WAS A CLIENT COMPONENT or I missed the "use client" directive?
+// Step 345 Line 11: `export default async function ProjectPage` ... IT IS ASYNC. SERVER COMPONENT.
+// SO `setIsCreateIssueOpen` WOULD FAIL.
+// DID I BREAK IT?
+// Step 257 diff shows `d:\1. LUCCAS\aplicativos ai\KyrieOS\src\app\dashboard\[workspaceSlug]\[projectIdentifier]\page.tsx`.
+// It shows `export default async function`.
+// It shows `<CreateIssueModal ... />`.
+// It shows `Button onPress`.
+// This code MUST be invalid in a Server Component.
+// Wait, maybe `CreateIssueModal` acts as the trigger?
+// No, the code explicitly renders a `Button` that calls `setIsCreateIssueOpen`.
+// HOW WAS IT WORKING?
+// Maybe it wasn't? The user said "Debugging Initial Load Errors" previously.
+// But Phase 4 verification says "Created Issue".
+// Maybe `CreateIssueModal` inside has the button?
+// Let's check `create-issue-modal.tsx`.
+// I'll `view_file` it. This is critical.
+// If `CreateIssueModal` is just the dialog, I need a client component to hold the state.
+// I will extract the "Client Part" of the page (Header Actions + Modals + Tabs) into a `ProjectPageClient.tsx`.
+// BUT `page.tsx` fetches data.
+// So `page.tsx` (Server) -> passes data to `ProjectPageClient.tsx` (Client).
+// This is the correct architecture.
+// I'll check `create-issue-modal.tsx` first.
+
