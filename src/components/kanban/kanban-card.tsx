@@ -1,67 +1,95 @@
 'use client'
 
 import { useDraggable } from '@dnd-kit/core'
-import { Card, Chip } from "@heroui/react"
-import { Database } from '@/types/supabase'
+import { Card, CardHeader, CardFooter, Chip, Avatar } from "@heroui/react"
+import { Calendar, MoreHorizontal } from "lucide-react"
 
-type Issue = Database['public']['Tables']['issues']['Row'] & {
+// Interface alinhada com seus dados
+interface KanbanCardProps {
+  issue: {
+    id: string
+    title: string
+    sequence_id: number
+    priority: "urgent" | "high" | "medium" | "low" | "none"
+    due_date?: string | null
     assignee?: {
-        full_name: string | null
-        email: string
+      full_name: string | null
+      email: string
     } | null
+  }
+  projectIdentifier: string
 }
 
-const priorityColorMap: Record<string, "success" | "warning" | "danger" | "default" | "accent"> = {
-    urgent: "danger",
-    high: "warning",
-    medium: "accent",
-    low: "success",
-    none: "default"
+const priorityColorMap: Record<string, "danger" | "warning" | "accent" | "success" | "default"> = {
+  urgent: "danger",
+  high: "warning",
+  medium: "accent",
+  low: "default",
+  none: "default"
 }
 
-import { useRouter } from 'next/navigation'
-
-export default function KanbanCard({ issue, projectIdentifier }: { issue: Issue, projectIdentifier: string }) {
-  const router = useRouter()
+export default function KanbanCard({ issue, projectIdentifier }: KanbanCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: issue.id,
-    data: { issue }
   })
 
-  // Using translate3d for better performance
   const style = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
   } : undefined
-  
-  const handleClick = () => {
-    if (!isDragging) {
-        // Use URLSearchParams to preserve other params if needed, or just hardcode view=board
-        router.push(`?view=board&issueId=${issue.id}`)
-    }
-  }
 
   return (
-    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className="touch-none" onClick={handleClick}>
-       <Card 
-            className={`p-3 cursor-grab border border-default-100 hover:border-default-300 transition-all ${isDragging ? 'opacity-50 ring-2 ring-primary rotate-2 z-50 shadow-xl' : 'shadow-sm'}`}
-       >
-            <div className="flex flex-col gap-2">
-                <span className="text-small font-medium line-clamp-2 select-none">{issue.title}</span>
-                <div className="flex justify-between items-center">
-                    <span className="font-mono text-tiny text-default-400 select-none">
-                        {projectIdentifier}-{issue.sequence_id}
-                    </span>
-                    <Chip 
-                        className="capitalize h-5 text-[10px]" 
-                        color={priorityColorMap[issue.priority || 'none']} 
-                        size="sm" 
-                        variant="soft"
-                    >
-                        {issue.priority || 'None'}
-                    </Chip>
-                </div>
-            </div>
-       </Card>
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className="touch-none mb-3">
+      <Card 
+        className={`w-full border-small border-white/5 bg-content1/60 backdrop-blur-md shadow-sm transition-all hover:bg-content1/80 hover:border-white/10 ${isDragging ? 'opacity-50 rotate-2' : ''}`}
+        // radius="lg" // radius is also likely deprecated or different, but 'isPressable' definitely errored. Removing isPressable. 
+      >
+        <CardHeader className="justify-between items-start pb-0 pt-3 px-3">
+            <span className="font-mono text-[10px] text-default-400 uppercase tracking-wider">
+                {projectIdentifier}-{issue.sequence_id}
+            </span>
+            <button className="text-default-400 hover:text-default-200 transition-colors">
+                <MoreHorizontal size={14} />
+            </button>
+        </CardHeader>
+        
+        <div className="px-3 py-2">
+            <h4 className="text-sm font-medium text-foreground leading-snug line-clamp-2">
+                {issue.title}
+            </h4>
+        </div>
+
+        <CardFooter className="gap-2 pt-0 pb-3 px-3 justify-between items-center">
+             <div className="flex items-center gap-2">
+                 <Chip 
+                    size="sm" 
+                    variant="soft" 
+                    color={priorityColorMap[issue.priority] as any} // Cast if necessary, or let implicit typing handle it
+                    className="border-0 pl-0 gap-1"
+                 >
+                    <span className="font-medium text-[10px] text-default-500">{issue.priority}</span>
+                 </Chip>
+                 {issue.due_date && (
+                    <div className="flex items-center gap-1 text-[10px] text-default-400">
+                        <Calendar size={10} />
+                        <span>{new Date(issue.due_date).toLocaleDateString()}</span>
+                    </div>
+                 )}
+             </div>
+             
+             {issue.assignee ? (
+                <Avatar 
+                    className="w-5 h-5 text-[9px]"
+                >
+                    <Avatar.Image src="" />
+                    <Avatar.Fallback>{issue.assignee.full_name?.[0] || issue.assignee.email?.charAt(0)}</Avatar.Fallback>
+                </Avatar>
+             ) : (
+                 <div className="w-5 h-5 rounded-full border border-dashed border-default-300 flex items-center justify-center">
+                    <span className="text-[8px] text-default-400">?</span>
+                 </div>
+             )}
+        </CardFooter>
+      </Card>
     </div>
   )
 }

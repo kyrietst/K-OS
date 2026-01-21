@@ -9,6 +9,7 @@ import {
   useSensors,
   useDroppable
 } from '@dnd-kit/core'
+import { ScrollShadow } from "@heroui/react"
 import { updateIssueStatus } from '@/app/dashboard/actions'
 import KanbanCard from './kanban-card'
 import { Database } from '@/types/supabase'
@@ -34,24 +35,29 @@ function KanbanColumn({ id, title, issues, projectIdentifier }: { id: string, ti
   })
 
   return (
-    <div ref={setNodeRef} className="flex flex-col w-80 shrink-0 gap-4">
-       <div className="flex items-center justify-between px-2">
-           <h3 className="font-semibold text-default-600 flex items-center gap-2">
+    <div ref={setNodeRef} className="flex flex-col w-80 shrink-0 gap-3 h-full">
+       <div className="flex items-center justify-between px-1">
+           <h3 className="font-medium text-small text-default-500 uppercase tracking-wider flex items-center gap-2">
                 {title}
-                <span className="text-tiny bg-default-100 px-2 py-0.5 rounded-full text-default-500">
+                <span className="flex items-center justify-center h-5 min-w-5 px-1.5 text-[10px] font-bold bg-content2 text-default-600 rounded-full">
                     {issues.length}
                 </span>
            </h3>
        </div>
-       <div className="flex flex-col gap-3 h-full min-h-[200px] bg-default-50/50 rounded-lg p-2 border border-dashed border-transparent hover:border-default-200 transition-colors">
-            {issues.map(issue => (
-                <KanbanCard key={issue.id} issue={issue} projectIdentifier={projectIdentifier} />
-            ))}
-            {issues.length === 0 && (
-                <div className="h-full flex items-center justify-center text-default-300 text-sm italic py-8">
-                    Empty
+       
+       <div className="flex-1 bg-content2/20 rounded-xl p-2 h-full overflow-hidden border border-white/5">
+            <ScrollShadow className="w-full h-full p-2 -m-2">
+                <div className="flex flex-col gap-3 pb-4">
+                    {issues.map(issue => (
+                        <KanbanCard key={issue.id} issue={issue} projectIdentifier={projectIdentifier} />
+                    ))}
+                    {issues.length === 0 && (
+                        <div className="h-32 flex items-center justify-center text-default-400 text-xs italic border-2 border-dashed border-default-100 rounded-lg">
+                            Empty
+                        </div>
+                    )}
                 </div>
-            )}
+            </ScrollShadow>
        </div>
     </div>
   )
@@ -117,7 +123,7 @@ export default function KanbanBoard({ initialIssues, workspaceSlug, projectIdent
 
     return (
         <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-            <div className="flex h-full gap-6 overflow-x-auto pb-4">
+            <div className="flex h-full gap-4 overflow-x-auto pb-4 px-2">
                 {COLUMNS.map(col => (
                     <KanbanColumn 
                         key={col.id} 

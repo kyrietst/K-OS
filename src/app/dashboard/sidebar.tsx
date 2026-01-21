@@ -1,180 +1,110 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
-import {
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownSection,
-  DropdownItem,
-  DropdownPopover,
-  Button,
-  Avatar
-} from "@heroui/react"
-import { createClient } from '@/lib/supabase/client'
-import { Database } from '@/types/supabase'
-import { useRouter } from 'next/navigation'
-import { CreateWorkspaceDialog } from '@/components/dashboard/create-workspace-modal'
-// Icons
-import {
-  ChevronDown,
-  LayoutDashboard,
-  Layers,
-  CheckSquare,
-  LogOut,
-  Plus
-} from 'lucide-react'
-
-type Workspace = Database['public']['Tables']['workspaces']['Row']
+import React from "react"
+import { ListBox, Avatar } from "@heroui/react"
+import { LayoutDashboard, Layers, CheckSquare, LogOut } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
 
 export default function Sidebar() {
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([])
-  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null)
-  const [isCreateWorkspaceOpen, setIsCreateWorkspaceOpen] = useState(false)
-  const supabase = createClient()
+  const pathname = usePathname()
   const router = useRouter()
 
-  useEffect(() => {
-    async function fetchWorkspaces() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+  // Mock Data (temporário até conexão com Supabase Auth)
+  const user = {
+    name: "Lukke Ferreira",
+    email: "lukke@kyrie.agency",
+    avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704d"
+  }
 
-      const { data, error } = await supabase
-        .from('workspaces')
-        .select(`
-           *,
-           workspace_members!inner(user_id)
-        `)
-        .eq('workspace_members.user_id', user.id)
-
-      if (data && data.length > 0) {
-        setWorkspaces(data)
-        // Simple logic: pick first one for now, or read from URL in parent
-        setCurrentWorkspace(data[0]) 
-      }
-    }
-
-    fetchWorkspaces()
-  }, [])
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
+  const handleAction = (key: React.Key) => {
+     if (key === "logout") {
+         console.log("Logout triggered")
+         return
+     }
+     router.push(key as string)
   }
 
   return (
-    <aside className="w-64 border-r border-default-200 h-screen flex flex-col bg-content1/50 p-4">
-      {/* Workspace Switcher */}
-      <div className="mb-6">
-        <Dropdown>
-          <DropdownTrigger className="w-full justify-between h-14 bg-background border-default-200 data-[hover=true]:bg-default-100 border rounded-medium transition-colors flex items-center px-4">
-              <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center gap-2 text-left">
-                    <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
-                        {currentWorkspace ? currentWorkspace.name.charAt(0).toUpperCase() : 'K'}
-                    </div>
-                    <div className="flex flex-col overflow-hidden text-left">
-                        <span className="text-small font-bold truncate">
-                            {currentWorkspace ? currentWorkspace.name : 'Select Workspace'}
-                        </span>
-                        <span className="text-tiny text-default-400">Free Plan</span>
-                    </div>
-                  </div>
-                  <ChevronDown size={16} className="text-default-400 flex-shrink-0"/>
-              </div>
-          </DropdownTrigger>
-          <DropdownPopover>
-            <DropdownMenu aria-label="Workspaces">
-                <DropdownSection aria-label="Workspaces">
-                    {workspaces.map((ws) => (
-                        <DropdownItem 
-                            key={ws.id}
-                            onPress={() => {
-                                setCurrentWorkspace(ws)
-                                router.push(`/dashboard/${ws.slug}`)
-                            }}
-                            textValue={ws.name}
-                        >
-                            <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-primary text-xs">{ws.name.charAt(0)}</div>
-                                <div className="flex flex-col">
-                                    <span>{ws.name}</span>
-                                    <span className="text-xs text-muted-foreground">{ws.slug}</span>
-                                </div>
-                            </div>
-                        </DropdownItem>
-                    ))}
-                </DropdownSection>
-                <DropdownSection aria-label="Actions">
-                    <DropdownItem 
-                        key="create_new" 
-                        textValue="Create Workspace"
-                        onPress={() => setIsCreateWorkspaceOpen(true)}
-                    >
-                        <div className="flex items-center gap-2">
-                            <Plus size={16} />
-                            <span>Create Workspace</span>
-                        </div>
-                    </DropdownItem>
-                </DropdownSection>
-            </DropdownMenu>
-          </DropdownPopover>
-        </Dropdown>
+    <aside className="h-full w-64 flex flex-col border-r border-white/5 bg-content1/50 backdrop-blur-xl">
+      {/* Header / Logo */}
+      <div className="h-14 flex items-center px-6 border-b border-white/5">
+        <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                <span className="font-bold text-white text-xs">K</span>
+            </div>
+            <span className="font-semibold text-small tracking-tight text-foreground">KyrieOS</span>
+        </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 flex flex-col gap-1">
-        <div className="flex flex-col gap-1">
-             <button className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-default-500 hover:bg-default-100 hover:text-foreground transition-colors text-left" onClick={() => router.push('/dashboard')}>
-                <LayoutDashboard size={20} />
-                <span>Dashboard</span>
-             </button>
-             <button className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-default-500 hover:bg-default-100 hover:text-foreground transition-colors text-left">
-                <CheckSquare size={20} />
-                <span>Issues</span>
-             </button>
-             <button className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-default-500 hover:bg-default-100 hover:text-foreground transition-colors text-left">
-                <Layers size={20} />
-                <span>Cycles</span>
-             </button>
-        </div>
-      </nav>
-
-      {/* User Profile */}
-      <div className="mt-auto border-t border-default-200 pt-4">
-         <Dropdown>
-            <DropdownTrigger className="w-full justify-start gap-2 h-auto py-2 px-2 data-[hover=true]:bg-default-100 rounded-medium transition-colors flex items-center">
-                <div className="flex items-center gap-2 w-full">
-                    <Avatar size="sm" className="ring-2 ring-default">
-                        <Avatar.Image src="https://i.pravatar.cc/150?u=a042581f4e29026024d" />
-                        <Avatar.Fallback>U</Avatar.Fallback>
-                    </Avatar>
-                    <div className="flex flex-col items-start">
-                        <span className="text-sm font-bold">User Name</span>
-                        <span className="text-tiny text-default-400">@user</span>
-                    </div>
+      <div className="flex-1 px-3 py-6">
+        <ListBox 
+            aria-label="Navegação Principal" 
+            variant="default" // "flat" is not valid in v3, using default but classes handle style
+            onAction={handleAction}
+            className="gap-1" // ListBox prop for classes
+        >
+            <ListBox.Item
+                key="/dashboard"
+                textValue="Visão Geral"
+                // Starting content passed as child/layout in v3 or mimicking user's code
+                // User provided startContent prop. In v3, ListBox.Item MIGHT NOT support startContent directly if it's not in the props list?
+                // Docs say ListBox.Item has children. Adapter patterns often use children.
+                // However, I'll try to match the user's "startContent" intent by putting it in the children flex layout.
+                className={pathname === "/dashboard" ? "bg-default-100 text-primary font-medium" : "text-default-500"}
+            >
+               <div className="flex items-center gap-2">
+                  <LayoutDashboard size={18} className={pathname === "/dashboard" ? "text-primary" : "text-default-400"} />
+                  <span>Visão Geral</span>
+               </div>
+            </ListBox.Item>
+            
+            <ListBox.Item
+                key="/dashboard/kanban"
+                textValue="Tarefas"
+                className={pathname?.includes("kanban") ? "bg-default-100 text-primary font-medium" : "text-default-500"}
+            >
+                <div className="flex items-center gap-2">
+                    <CheckSquare size={18} className={pathname?.includes("kanban") ? "text-primary" : "text-default-400"} />
+                    <span>Tarefas</span>
                 </div>
-            </DropdownTrigger>
-            <DropdownPopover placement="top start">
-                <DropdownMenu aria-label="User Actions">
-                    <DropdownItem key="profile" className="h-14 gap-2" textValue="Signed in as">
-                        <p className="font-bold">Signed in as</p>
-                        <p className="font-bold">@user</p>
-                    </DropdownItem>
-                    <DropdownItem key="settings" textValue="My Settings">
-                        My Settings
-                    </DropdownItem>
-                    <DropdownItem key="logout" onPress={handleSignOut} textValue="Log Out" className="text-danger">
-                        <div className="flex items-center gap-2">
-                            <LogOut size={16}/>
-                            <span>Log Out</span>
-                        </div>
-                    </DropdownItem>
-                </DropdownMenu>
-            </DropdownPopover>
-         </Dropdown>
+            </ListBox.Item>
+
+            <ListBox.Item
+                key="/dashboard/cycles"
+                textValue="Ciclos"
+                className="text-default-500"
+            >
+                <div className="flex items-center gap-2">
+                    <Layers size={18} className="text-default-400" />
+                    <span>Ciclos</span>
+                </div>
+            </ListBox.Item>
+        </ListBox>
       </div>
-      <CreateWorkspaceDialog isOpen={isCreateWorkspaceOpen} onOpenChange={setIsCreateWorkspaceOpen} />
+
+      {/* Footer / User Profile */}
+      <div className="p-4 border-t border-white/5">
+        <div className="flex items-center justify-between group cursor-pointer p-2 rounded-xl hover:bg-default-100/50 transition-colors">
+            {/* Simulated User Component */}
+            <div className="flex items-center gap-3">
+                <Avatar 
+                    src={user.avatar}
+                    size="sm"
+                    isBordered
+                    className="ring-2 ring-primary/20"
+                />
+                <div className="flex flex-col">
+                    <span className="text-small font-medium text-foreground">{user.name}</span>
+                    <span className="text-[10px] text-default-400">{user.email}</span>
+                </div>
+            </div>
+
+            <button className="text-default-400 hover:text-danger transition-colors opacity-0 group-hover:opacity-100">
+                <LogOut size={16} />
+            </button>
+        </div>
+      </div>
     </aside>
   )
 }
