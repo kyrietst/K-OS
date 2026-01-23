@@ -450,3 +450,118 @@ export async function generateDescription(title: string) {
     - Verify model availability at openrouter.ai`
   }
 }
+
+export async function updateProject(
+  prevState: ActionState,
+  formData: FormData
+) {
+  const supabase = await createClient()
+  
+  const projectId = formData.get('project_id') as string
+  const name = formData.get('name') as string
+  const description = formData.get('description') as string
+  const workspaceSlug = formData.get('workspace_slug') as string
+  const projectIdentifier = formData.get('project_identifier') as string
+
+  // Validation
+  const errors: ActionState['errors'] = {}
+  if (!name || name.trim().length === 0) {
+    errors.name = ['Project name is required']
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return { errors }
+  }
+
+  // Verify auth
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { message: 'Unauthorized' }
+  }
+
+  // Update project
+  const updates: { name: string; description?: string | null } = { name: name.trim() }
+  if (description !== undefined) {
+    updates.description = description.trim() || null
+  }
+
+  const { error } = await supabase
+    .from('projects')
+    .update(updates)
+    .eq('id', projectId)
+
+  if (error) {
+    return { message: 'Failed to update project: ' + error.message }
+  }
+
+  revalidatePath(`/dashboard/${workspaceSlug}/${projectIdentifier}`)
+  revalidatePath(`/dashboard/${workspaceSlug}/${projectIdentifier}/settings`)
+  return { message: 'success' }
+}
+
+export async function deleteProject(
+  prevState: ActionState,
+  formData: FormData
+) {
+  const supabase = await createClient()
+  
+  const projectId = formData.get('project_id') as string
+  const confirmationText = formData.get('confirmation') as string
+  const projectIdentifier = formData.get('project_identifier') as string
+  const workspaceSlug = formData.get('workspace_slug') as string
+
+  // Verify auth
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { message: 'Unauthorized' }
+  }
+
+  // Verify confirmation text matches project identifier
+  if (confirmationText?.toUpperCase() !== projectIdentifier?.toUpperCase()) {
+    return { 
+      message: 'Confirmation text does not match project identifier',
+      errors: { confirmation: ['Type the project identifier to confirm deletion'] }
+    }
+  }
+
+  // Check if user is admin of workspace (via workspace_members)
+  const { data: project } = await supabase
+    .from('projects')
+    .select('workspace_id')
+    .eq('id', projectId)
+    .single()
+
+  if (!project) {
+    return { message: 'Project not found' }
+  }
+
+  const { data: membership } = await supabase
+    .from('workspace_members')
+    .select('role')
+    .eq('workspace_id', project.workspace_id)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!membership || membership.role !== 'admin') {
+    return { message: 'Only workspace admins can delete projects' }
+  }
+
+  // Delete all related data first (issues, cycles, modules)
+  await supabase.from('issues').delete().eq('project_id', projectId)
+  await supabase.from('cycles').delete().eq('project_id', projectId)
+  await supabase.from('modules').delete().eq('project_id', projectId)
+
+  // Delete project
+  const { error } = await supabase
+    .from('projects')
+    .delete()
+    .eq('id', projectId)
+
+  if (error) {
+    return { message: 'Failed to delete project: ' + error.message }
+  }
+
+  revalidatePath(`/dashboard/${workspaceSlug}`)
+  redirect(`/dashboard/${workspaceSlug}`)
+}
+

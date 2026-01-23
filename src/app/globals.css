@@ -1,9 +1,39 @@
 @import "tailwindcss";
 
+/* HeroUI v3 styles - Must be after Tailwind */
+@import "@heroui/styles";
+
 @layer base {
   body {
-    background-color: var(--background);
-    color: var(--foreground);
-    min-height: 100vh;
+    @apply bg-[#09090b] text-foreground antialiased min-h-screen relative overflow-x-hidden;
+  }
+
+  /* The Apple Look Secret: Ambient Lights */
+  body::before {
+    content: "";
+    position: fixed;
+    top: -10%;
+    left: -10%;
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+    filter: blur(80px);
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.8;
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    bottom: -10%;
+    right: -10%;
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.10) 0%, rgba(0, 0, 0, 0) 70%);
+    filter: blur(80px);
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.6;
   }
 }

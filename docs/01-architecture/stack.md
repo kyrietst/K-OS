@@ -1,57 +1,133 @@
 # 🥞 Tech Stack (A "Stack de Ouro")
 
-Esta é a definição oficial das tecnologias utilizadas no **KyrieOS**. Respeite
-rigorosamente estas versões e bibliotecas.
+> **Última Atualização:** 2026-01-23\
+> **Status:** ✅ VALIDADO contra `package.json`
 
-## Frontend Core
+Esta é a definição oficial das tecnologias instaladas no **KyrieOS**.
 
-- **Framework**: `Next.js 16+` (App Router, Turbopack enabled)
-- **Linguagem**: `TypeScript` (Strict Mode)
-- **Build Tool**: `Turbopack` (Default in Next.js 15+)
+---
 
-## UI & Styling
+## 📦 Versões Exatas Instaladas
 
-- **Component Library**: `HeroUI v3 (Beta)`
-  - **Import**: `@heroui/react` (Compound Components pattern)
-  - **Estilização:** Tailwind CSS v4.
-  - Configuração via CSS imports (`@import "tailwindcss";`).
-  - Integração com HeroUI via `@plugin` e `@source`.
+| Categoria       | Tecnologia    | Versão         | Status |
+| --------------- | ------------- | -------------- | ------ |
+| **Framework**   | Next.js       | `16.1.1`       | ✅     |
+| **Runtime**     | React         | `19.2.3`       | ✅     |
+| **Linguagem**   | TypeScript    | `^5`           | ✅     |
+| **Estilização** | Tailwind CSS  | `^4`           | ✅     |
+| **UI Library**  | HeroUI React  | `3.0.0-beta.3` | ✅     |
+| **UI Styles**   | HeroUI Styles | `3.0.0-beta.3` | ✅     |
 
-- **Componentes UI:** HeroUI v3 Beta.
-  - **Pattern:** Compound Components Exclusivamente (ex: `Modal` >
-    `Modal.Container` > `Modal.Dialog`).
-  - **Primitivos:** Components como `Input` e `TextArea` são primitivos (sem
-    props de `label` complexas).
-  - **Ícones:** Lucide React.
-  - **Table:** Atualmente em desenvolvimento no v3 Beta (usando fallback HTML +
-    Tailwind).
-  - **Drag & Drop:** `@dnd-kit` (Core, Sortable, Utilities).
-  - **Charts:** `recharts` (Responsive, Composition components).
+---
 
-- **Tailwind Tools**:
-  - **Variables**: Native CSS variables for theming
-  - **Utility Class Management**: `tailwind-merge` + `clsx` (via `cn` helper)
+## 🎨 UI & Styling
 
-## State Management
+### HeroUI v3 (Beta)
 
-- **Server State**: `TanStack Query` (via Supabase helpers if needed, otherwise
-  Server Components)
-- **Client State**: `React.useState` / `React.useReducer` (local), `Zustand`
-  (global UI state if needed)
-- **URL State**: `nuqs` (Search params as state)
+- **Packages:** `@heroui/react`, `@heroui/styles`
+- **Pattern:** Compound Components (ex:
+  `<Modal><Modal.Dialog>...</Modal.Dialog></Modal>`)
+- **CSS Import:** `@import "@heroui/styles";` em `globals.css`
 
-## Backend & Data
+> [!IMPORTANT]
+> **shadcn/ui foi REMOVIDO.** O PRD original sugeria HeroUI + shadcn, mas a
+> implementação atual usa **HeroUI v3 puro** para evitar conflitos de design
+> system.
 
-- **Platform**: `Supabase`
-- **Database**: `PostgreSQL`
-- **ORM/Client**: `@supabase/supabase-js` (Typed via `database.types.ts`)
-- **Auth**: `Supabase Auth` (SSR supported)
+### Tailwind CSS v4
 
-## Key Architectural Decisions
+- **Config:** `tailwind.config.js` (minimal)
+- **PostCSS:** `@tailwindcss/postcss ^4`
+- **Utilities:** `tailwind-merge ^3.4.0`, `clsx ^2.1.1`
 
-1. **HeroUI v3 Usage**: Use Compound Components (e.g., `modal.content`,
-   `card.header`). Do NOT use v2 flat props.
-2. **Server First**: Prefer Server Components for data fetching. use
-   `use client` only for interactive leaves.
-3. **Tailwind v4**: No `tailwind.config.ts` needed for standard usage;
-   configuration lives in CSS.
+### Ícones
+
+- **Library:** `lucide-react ^0.562.0`
+
+### Toasts
+
+- **Library:** `sonner ^2.x` ✅ INSTALADO
+- **Uso:** `toast.success()`, `toast.error()`
+- **Config:** `<Toaster />` em `providers.tsx`
+
+---
+
+## 🔧 State Management
+
+| Camada              | Tecnologia                            | Status           |
+| ------------------- | ------------------------------------- | ---------------- |
+| **Server State**    | Server Components + Server Actions    | ✅ Implementado  |
+| **Client State**    | `React.useState` / `React.useReducer` | ✅ Implementado  |
+| **Realtime State**  | Custom Hook `useIssuesRealtime`       | ✅ Implementado  |
+| **URL State**       | `nuqs`                                | ❌ Não instalado |
+| **Global UI State** | `Zustand`                             | ❌ Não instalado |
+
+> [!NOTE]
+> `nuqs` e `Zustand` estão no PRD mas não foram necessários até agora. Adicionar
+> quando surgir necessidade.
+
+---
+
+## 🗄️ Backend & Data
+
+| Tecnologia      | Package                 | Versão    | Status           |
+| --------------- | ----------------------- | --------- | ---------------- |
+| Supabase SSR    | `@supabase/ssr`         | `^0.8.0`  | ✅               |
+| Supabase Client | `@supabase/supabase-js` | `^2.90.1` | ✅               |
+| Database        | PostgreSQL (Supabase)   | —         | ✅               |
+| **Realtime**    | Supabase Realtime       | —         | ✅ Habilitado    |
+| **RLS**         | Row Level Security      | —         | ✅ Todas tabelas |
+
+### Realtime Habilitado
+
+```sql
+-- Tabela issues está na publication supabase_realtime
+ALTER PUBLICATION supabase_realtime ADD TABLE issues;
+```
+
+---
+
+## 📝 Rich Text & Interactivity
+
+| Feature               | Package                         | Versão    |
+| --------------------- | ------------------------------- | --------- |
+| Rich Editor           | `@tiptap/react`                 | `^3.15.3` |
+| Tiptap Starter Kit    | `@tiptap/starter-kit`           | `^3.15.3` |
+| Placeholder Extension | `@tiptap/extension-placeholder` | `^3.15.3` |
+| Drag & Drop           | `@dnd-kit/core`                 | `^6.3.1`  |
+| DnD Sortable          | `@dnd-kit/sortable`             | `^10.0.0` |
+| DnD Utils             | `@dnd-kit/utilities`            | `^3.2.2`  |
+| Charts                | `recharts`                      | `^3.6.0`  |
+| Animations            | `framer-motion`                 | `^11.9.0` |
+
+---
+
+## 🤖 AI Integration
+
+| Feature        | Package  | Versão    |
+| -------------- | -------- | --------- |
+| OpenRouter API | `openai` | `^6.16.0` |
+
+---
+
+## 📋 Tecnologias do PRD NÃO Instaladas
+
+| Tecnologia        | PRD Sugeria | Motivo da Ausência                    |
+| ----------------- | ----------- | ------------------------------------- |
+| `shadcn/ui`       | Sim         | Substituído por HeroUI v3 puro        |
+| `nuqs`            | Sim         | Não necessário ainda                  |
+| `Zustand`         | Sim         | Não necessário ainda                  |
+| `Zod`             | Sim         | Ainda não implementado                |
+| `react-hook-form` | Sim         | Usando forms nativos + Server Actions |
+
+---
+
+## 🏛️ Decisões Arquiteturais
+
+1. **HeroUI v3 Only:** Usar Compound Components. Não misturar com shadcn.
+2. **Server First:** Preferir Server Components. Usar `'use client'` apenas para
+   interatividade.
+3. **Server Actions:** Preferir Server Actions sobre API Routes para mutações.
+4. **Tailwind v4:** Configuração via CSS imports, não via `tailwind.config.ts`.
+5. **Realtime Hook:** Usar `useIssuesRealtime` para sincronização multiplayer.
+6. **Toast Feedback:** Usar `sonner` para feedback visual em todas as ações.

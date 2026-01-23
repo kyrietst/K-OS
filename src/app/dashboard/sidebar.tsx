@@ -4,25 +4,36 @@ import React from "react"
 import { ListBox, Avatar } from "@heroui/react"
 import { LayoutDashboard, Layers, CheckSquare, LogOut } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
+import { signOutAction } from "@/app/auth/actions"
 
-export default function Sidebar() {
+interface SidebarProps {
+  user: {
+    id: string
+    email: string
+    name: string
+    avatar: string | null
+  }
+}
+
+export default function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
 
-  // Mock Data (temporário até conexão com Supabase Auth)
-  const user = {
-    name: "Lukke Ferreira",
-    email: "lukke@kyrie.agency",
-    avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704d"
-  }
-
   const handleAction = (key: React.Key) => {
      if (key === "logout") {
-         console.log("Logout triggered")
+         signOutAction()
          return
      }
      router.push(key as string)
   }
+
+  // Get user initials for avatar fallback
+  const initials = user.name
+    .split(" ")
+    .map(n => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2)
 
   return (
     <aside className="h-full w-64 flex flex-col border-r border-white/5 bg-content1/50 backdrop-blur-xl">
@@ -40,18 +51,14 @@ export default function Sidebar() {
       <div className="flex-1 px-3 py-6">
         <ListBox 
             aria-label="Navegação Principal" 
-            variant="default" // "flat" is not valid in v3, using default but classes handle style
+            variant="default"
             onAction={handleAction}
-            className="gap-1" // ListBox prop for classes
+            className="gap-1"
         >
             <ListBox.Item
                 key="/dashboard"
                 textValue="Visão Geral"
-                // Starting content passed as child/layout in v3 or mimicking user's code
-                // User provided startContent prop. In v3, ListBox.Item MIGHT NOT support startContent directly if it's not in the props list?
-                // Docs say ListBox.Item has children. Adapter patterns often use children.
-                // However, I'll try to match the user's "startContent" intent by putting it in the children flex layout.
-                className={pathname === "/dashboard" ? "bg-default-100 text-primary font-medium" : "text-default-500"}
+                className={pathname === "/dashboard" ? "bg-primary/10 text-primary font-medium" : "text-default-500"}
             >
                <div className="flex items-center gap-2">
                   <LayoutDashboard size={18} className={pathname === "/dashboard" ? "text-primary" : "text-default-400"} />
@@ -62,7 +69,7 @@ export default function Sidebar() {
             <ListBox.Item
                 key="/dashboard/kanban"
                 textValue="Tarefas"
-                className={pathname?.includes("kanban") ? "bg-default-100 text-primary font-medium" : "text-default-500"}
+                className={pathname?.includes("kanban") ? "bg-primary/10 text-primary font-medium" : "text-default-500"}
             >
                 <div className="flex items-center gap-2">
                     <CheckSquare size={18} className={pathname?.includes("kanban") ? "text-primary" : "text-default-400"} />
@@ -86,21 +93,28 @@ export default function Sidebar() {
       {/* Footer / User Profile */}
       <div className="p-4 border-t border-white/5">
         <div className="flex items-center justify-between group cursor-pointer p-2 rounded-xl hover:bg-default-100/50 transition-colors">
-            {/* Simulated User Component */}
+            {/* User Info */}
             <div className="flex items-center gap-3">
-                <Avatar 
-                    src={user.avatar}
-                    size="sm"
-                    isBordered
-                    className="ring-2 ring-primary/20"
-                />
+                <Avatar size="sm" className="ring-2 ring-primary/20">
+                    {user.avatar ? (
+                        <Avatar.Image src={user.avatar} alt={user.name} />
+                    ) : null}
+                    <Avatar.Fallback className="bg-primary/20 text-primary text-xs font-bold">
+                        {initials}
+                    </Avatar.Fallback>
+                </Avatar>
                 <div className="flex flex-col">
                     <span className="text-small font-medium text-foreground">{user.name}</span>
                     <span className="text-[10px] text-default-400">{user.email}</span>
                 </div>
             </div>
 
-            <button className="text-default-400 hover:text-danger transition-colors opacity-0 group-hover:opacity-100">
+            {/* Logout Button */}
+            <button 
+                onClick={() => signOutAction()}
+                className="text-default-400 hover:text-danger transition-colors opacity-0 group-hover:opacity-100"
+                title="Sair"
+            >
                 <LogOut size={16} />
             </button>
         </div>

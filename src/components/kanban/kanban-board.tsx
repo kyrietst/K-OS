@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   DndContext, 
   DragEndEvent, 
@@ -12,14 +11,8 @@ import {
 import { ScrollShadow } from "@heroui/react"
 import { updateIssueStatus } from '@/app/dashboard/actions'
 import KanbanCard from './kanban-card'
-import { Database } from '@/types/supabase'
-
-type Issue = Database['public']['Tables']['issues']['Row'] & {
-    assignee?: {
-        full_name: string | null
-        email: string
-    } | null
-}
+import { toast } from 'sonner'
+import { useIssuesRealtime, IssueWithAssignee } from '@/hooks/use-issues-realtime'
 
 const COLUMNS = [
   { id: 'backlog', title: 'Backlog' },
@@ -29,7 +22,7 @@ const COLUMNS = [
   { id: 'canceled', title: 'Canceled' },
 ]
 
-function KanbanColumn({ id, title, issues, projectIdentifier }: { id: string, title: string, issues: Issue[], projectIdentifier: string }) {
+function KanbanColumn({ id, title, issues, projectIdentifier }: { id: string, title: string, issues: IssueWithAssignee[], projectIdentifier: string }) {
   const { setNodeRef } = useDroppable({
     id: id,
   })
@@ -64,18 +57,18 @@ function KanbanColumn({ id, title, issues, projectIdentifier }: { id: string, ti
 }
 
 interface KanbanBoardProps {
-    initialIssues: Issue[]
+    initialIssues: IssueWithAssignee[]
     workspaceSlug: string
     projectIdentifier: string
+    projectId: string
 }
 
-export default function KanbanBoard({ initialIssues, workspaceSlug, projectIdentifier }: KanbanBoardProps) {
-    const [issues, setIssues] = useState<Issue[]>(initialIssues)
-
-    // Sync state with props when initialIssues changes (server update)
-    useEffect(() => {
-        setIssues(initialIssues)
-    }, [initialIssues])
+export default function KanbanBoard({ initialIssues, workspaceSlug, projectIdentifier, projectId }: KanbanBoardProps) {
+    // Use Realtime-enabled hook instead of plain useState
+    const { issues, optimisticUpdate, rollback } = useIssuesRealtime({
+        initialIssues,
+        projectId,
+    })
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -97,22 +90,23 @@ export default function KanbanBoard({ initialIssues, workspaceSlug, projectIdent
         if (!currentIssue || currentIssue.status === newStatus) return
 
         const oldStatus = currentIssue.status
-        setIssues(prev => prev.map(issue => 
-            issue.id === issueId ? { ...issue, status: newStatus } : issue
-        ))
+        
+        // Optimistic update via hook
+        optimisticUpdate(issueId, { status: newStatus })
 
         try {
             const result = await updateIssueStatus(issueId, newStatus, workspaceSlug, projectIdentifier)
-            if (result.message !== 'success') {
-                 setIssues(prev => prev.map(issue => 
-                    issue.id === issueId ? { ...issue, status: oldStatus } : issue
-                 ))
-                 console.error(result.message)
+            if (result.message === 'success') {
+                toast.success(`Moved to ${newStatus.replace('-', ' ')}`)
+            } else {
+                // Rollback on failure
+                rollback(issueId, { status: oldStatus })
+                toast.error('Failed to move card')
             }
         } catch (e) {
-            setIssues(prev => prev.map(issue => 
-                issue.id === issueId ? { ...issue, status: oldStatus } : issue
-            ))
+            // Rollback on error
+            rollback(issueId, { status: oldStatus })
+            toast.error('Failed to move card')
             console.error(e)
         }
     }
@@ -137,3 +131,4 @@ export default function KanbanBoard({ initialIssues, workspaceSlug, projectIdent
         </DndContext>
     )
 }
+

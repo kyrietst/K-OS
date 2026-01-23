@@ -10,7 +10,7 @@ interface KanbanCardProps {
     id: string
     title: string
     sequence_id: number
-    priority: "urgent" | "high" | "medium" | "low" | "none"
+    priority: "urgent" | "high" | "medium" | "low" | "none" | null
     due_date?: string | null
     assignee?: {
       full_name: string | null
@@ -63,10 +63,10 @@ export default function KanbanCard({ issue, projectIdentifier }: KanbanCardProps
                  <Chip 
                     size="sm" 
                     variant="soft" 
-                    color={priorityColorMap[issue.priority] as any} // Cast if necessary, or let implicit typing handle it
+                    color={priorityColorMap[issue.priority || 'none']}
                     className="border-0 pl-0 gap-1"
                  >
-                    <span className="font-medium text-[10px] text-default-500">{issue.priority}</span>
+                    <span className="font-medium text-[10px] text-default-500">{issue.priority || 'none'}</span>
                  </Chip>
                  {issue.due_date && (
                     <div className="flex items-center gap-1 text-[10px] text-default-400">
@@ -77,11 +77,11 @@ export default function KanbanCard({ issue, projectIdentifier }: KanbanCardProps
              </div>
              
              {issue.assignee ? (
-                <Avatar 
-                    className="w-5 h-5 text-[9px]"
-                >
-                    <Avatar.Image src="" />
-                    <Avatar.Fallback>{issue.assignee.full_name?.[0] || issue.assignee.email?.charAt(0)}</Avatar.Fallback>
+                <Avatar size="sm" className="size-5">
+                    <Avatar.Image src="" alt="Assignee" />
+                    <Avatar.Fallback className="text-[9px]">
+                        {issue.assignee.full_name?.[0] || issue.assignee.email?.charAt(0)}
+                    </Avatar.Fallback>
                 </Avatar>
              ) : (
                  <div className="w-5 h-5 rounded-full border border-dashed border-default-300 flex items-center justify-center">

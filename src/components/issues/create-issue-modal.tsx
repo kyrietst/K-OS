@@ -90,7 +90,7 @@ export function CreateIssueDialog({
                             name="priority"
                             className="w-full" 
                             placeholder="Select Priority"
-                            defaultSelectedKeys={['none']}
+                            defaultSelectedKey="none"
                         >
                             <Label>Priority</Label>
                             <Select.Trigger className="border border-default-200 rounded-md px-3 py-2 w-full flex justify-between items-center text-left">

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import IssueList from '@/components/issues/issue-list'
 import CreateIssueModal from '@/components/issues/create-issue-modal'
@@ -100,6 +100,8 @@ export default async function ProjectPage({
     if (data) selectedIssue = data
   }
 
+  const currentView = view
+
   return (
     <div className="flex flex-col h-full bg-transparent">
        {/* Header */}
@@ -120,11 +122,9 @@ export default async function ProjectPage({
                         projectId={project.id}
                         workspaceId={workspace.id}
                    />
-                   <Link href={`/dashboard/${workspaceSlug}/${projectIdentifier}/settings`}>
-                     <Button isIconOnly variant="secondary" className="bg-content2/50">
-                          <Settings size={18} />
-                     </Button>
-                   </Link>
+                   <Button isIconOnly variant="secondary" className="bg-content2/50">
+                        <Settings size={18} />
+                   </Button>
                </div>
            </div>
 
@@ -151,11 +151,6 @@ export default async function ProjectPage({
                            Cycles
                        </div>
                    </Link>
-                   <Link href={`?view=modules`}>
-                       <div className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${view === 'modules' ? 'bg-content1 text-foreground shadow-sm' : 'text-default-500 hover:text-default-300'}`}>
-                           Modules
-                       </div>
-                   </Link>
                </div>
            </div>
        </div>
@@ -176,21 +171,15 @@ export default async function ProjectPage({
                     />
                 </div>
             ) : view === 'cycles' ? (
-                 <CyclesView 
-                    cycles={cycles || []} 
-                    issues={issues || []} 
-                    workspaceSlug={workspaceSlug}
-                    projectIdentifier={projectIdentifier}
-                    projectId={project.id}
-                 />
-            ) : view === 'modules' ? (
-                 <ModulesView 
-                    modules={modules || []} 
-                    issues={issues || []} 
-                    workspaceSlug={workspaceSlug}
-                    projectIdentifier={projectIdentifier}
-                    projectId={project.id}
-                 />
+                 <div className="p-6">
+                    <CyclesView 
+                       cycles={cycles || []} 
+                       issues={issues || []} 
+                       workspaceSlug={workspaceSlug}
+                       projectIdentifier={projectIdentifier}
+                       projectId={project.id}
+                    />
+                 </div>
             ) : (
                 <div className="h-full overflow-y-auto">
                     <IssueList issues={issues || []} projectIdentifier={project.identifier} />
@@ -210,3 +199,4 @@ export default async function ProjectPage({
     </div>
   )
 }
+
