@@ -1,9 +1,8 @@
 # 📊 Feature Status
 
-> **Última Atualização:** 2026-01-23\
-> **Fonte:** Comparação entre `docs/PRD.md` e código em `src/`
+> **Última Atualização:** 2026-01-25 **Fonte:** Estado atual do código em `src/`
 
-Este documento compara o que o PRD definiu vs o estado atual do código.
+Este documento lista o status atual das features do KyrieOS.
 
 ---
 

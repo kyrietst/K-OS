@@ -10,10 +10,15 @@ import {
   Select,
   Label,
   ListBox,
-  Chip
+  Chip,
+  Switch,
+  Slider,
+  Accordion,
+  TextField
 } from "@heroui/react"
 import { Database } from '@/types/supabase'
 import dynamic from 'next/dynamic'
+import { Settings } from 'lucide-react'
 
 const RichTextEditor = dynamic(() => import('@/components/ui/rich-editor'), { 
   ssr: false,
@@ -57,6 +62,10 @@ export default function IssueDetailsModal({
   const [deletePending, setDeletePending] = useState(false)
   const [mounted, setMounted] = useState(false)
 
+  // Local state for agency controls
+  const [techScore, setTechScore] = useState(issue?.technical_effort_score || 1);
+  const [clientVisible, setClientVisible] = useState(!!issue?.client_visible);
+
   useEffect(() => {
     setMounted(true)
   }, [])
@@ -64,12 +73,11 @@ export default function IssueDetailsModal({
   // New State for AI and Editor
   const [title, setTitle] = useState(issue?.title || '')
   // Handle case where issue.description is null or not in expected format
-  const initialDescription = issue?.description && typeof issue.description === 'object' && 'content' in issue.description 
+  const description = issue?.description && typeof issue.description === 'object' && 'content' in issue.description 
     ? (issue.description as any).content 
     : ''
-  const [description, setDescription] = useState(initialDescription)
+  const [localDescription, setLocalDescription] = useState(description)
 
-  // Close handler: clear URL param
   const handleClose = () => {
     const url = new URL(window.location.href)
     url.searchParams.delete('issueId')
@@ -79,7 +87,7 @@ export default function IssueDetailsModal({
   const handleDelete = async () => {
     if (!issue) return
     if (!confirm('Are you sure you want to delete this issue? This action cannot be undone.')) return
-
+    
     setDeletePending(true)
     try {
       const result = await deleteIssue(workspaceSlug, projectIdentifier, issue.id)
@@ -104,19 +112,23 @@ export default function IssueDetailsModal({
     <Modal isOpen={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <Modal.Backdrop />
       <Modal.Container className="fixed inset-0 z-50 flex items-center justify-center">
-        <Modal.Dialog className="sm:max-w-3xl w-full">
+        <Modal.Dialog className="sm:max-w-4xl w-full">
             <form action={formAction} className="contents">
                 <input type="hidden" name="issue_id" value={issue.id} />
                 <input type="hidden" name="project_identifier" value={projectIdentifier} />
                 <input type="hidden" name="workspace_slug" value={workspaceSlug} />
-                <input type="hidden" name="description" value={description} />
+                <input type="hidden" name="description" value={localDescription} />
+                
+                {/* Hidden fields for agency controls */}
+                <input type="hidden" name="technical_effort_score" value={techScore} />
+                {clientVisible && <input type="hidden" name="client_visible" value="on" />}
 
                 <Modal.Header className="flex flex-row justify-between items-center pr-10">
                     <span className="font-mono text-default-400 text-sm">
                         {projectIdentifier}-{issue.sequence_id}
                     </span>
                     <div className="flex gap-2">
-                        <Chip size="sm" variant="soft" color={issue.status === 'done' ? 'success' : 'default'} className="capitalize">
+                        <Chip className="capitalize">
                             {issue.status}
                         </Chip>
                     </div>
@@ -125,19 +137,20 @@ export default function IssueDetailsModal({
                 <Modal.Body className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Left Column: Main Content */}
                     <div className="md:col-span-2 flex flex-col gap-4">
-                        <Input
-                            name="title"
-                            defaultValue={issue.title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            placeholder="Issue Title"
-                            className="font-semibold text-xl border-b-2 border-default-200 focus:border-primary outline-none px-0 py-2 w-full bg-transparent"
-                        />
+                        <TextField name="title" aria-label="Issue Title">
+                            <Input
+                                defaultValue={issue.title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                placeholder="Issue Title"
+                                className="font-semibold text-xl border-b-2 border-default-200 focus:border-primary outline-none px-0 py-2 w-full bg-transparent"
+                            />
+                        </TextField>
                         
                         <div className="flex flex-col gap-2">
                             <Label className="text-sm font-medium text-default-500">Description</Label>
                             <RichTextEditor 
-                                content={description} 
-                                onChange={setDescription}
+                                content={localDescription} 
+                                onChange={setLocalDescription}
                                 issueTitle={title || issue?.title || 'Tarefa sem título'}
                             />
                         </div>
@@ -153,11 +166,11 @@ export default function IssueDetailsModal({
                     {/* Right Column: Meta */}
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col gap-1.5">
-                            <Label className="text-xs font-semibold text-default-500 uppercase">Status</Label>
                             <Select 
                                 name="status" 
-                                defaultValue={issue.status || 'backlog'}
+                                defaultSelectedKey={issue.status || 'backlog'}
                             >
+                                <Label>Status</Label>
                                 <Select.Trigger>
                                     <Select.Value />
                                     <Select.Indicator />
@@ -175,11 +188,11 @@ export default function IssueDetailsModal({
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                            <Label className="text-xs font-semibold text-default-500 uppercase">Priority</Label>
                             <Select 
                                 name="priority" 
-                                defaultValue={issue.priority || 'none'}
+                                defaultSelectedKey={issue.priority || 'none'}
                             >
+                                <Label>Priority</Label>
                                 <Select.Trigger>
                                     <Select.Value />
                                     <Select.Indicator />
@@ -197,11 +210,11 @@ export default function IssueDetailsModal({
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                            <Label className="text-xs font-semibold text-default-500 uppercase">Assignee</Label>
                             <Select 
                                 name="assignee_id" 
-                                defaultValue={issue.assignee_id || 'unassigned'}
+                                defaultSelectedKey={issue.assignee_id || 'unassigned'}
                             >
+                                <Label>Assignee</Label>
                                 <Select.Trigger>
                                     <Select.Value />
                                     <Select.Indicator />
@@ -222,11 +235,11 @@ export default function IssueDetailsModal({
                         </div>
 
                     <div className="flex flex-col gap-1.5">
-                            <Label className="text-xs font-semibold text-default-500 uppercase">Cycle</Label>
                             <Select 
                                 name="cycle_id" 
-                                defaultValue={issue.cycle_id || 'none'}
+                                defaultSelectedKey={issue.cycle_id || 'none'}
                             >
+                                <Label>Cycle</Label>
                                 <Select.Trigger>
                                     <Select.Value />
                                     <Select.Indicator />
@@ -251,11 +264,11 @@ export default function IssueDetailsModal({
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                            <Label className="text-xs font-semibold text-default-500 uppercase">Module</Label>
                             <Select
                                 name="module_id"
-                                defaultValue={issue.module_id || 'none'}
+                                defaultSelectedKey={issue.module_id || 'none'}
                             >
+                                <Label>Module</Label>
                                 <Select.Trigger>
                                 <Select.Value />
                                 <Select.Indicator />
@@ -281,20 +294,66 @@ export default function IssueDetailsModal({
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                            <Label className="text-xs font-semibold text-default-500 uppercase">Due Date</Label>
-                            <Input 
-                                type="date" 
-                                name="due_date" 
-                                defaultValue={issue.due_date || ''}
-                                className="border border-default-200 rounded-md px-3 py-2 w-full"
-                            />
+                            <TextField name="due_date">
+                                <Label>Due Date</Label>
+                                <Input type="date" defaultValue={issue.due_date || ''} />
+                            </TextField>
+                        </div>
+
+                        {/* Agency Controls Accordion */}
+                        <div className="pt-4 border-t border-default-100">
+                             <Accordion className="px-0">
+                                <Accordion.Item key="agency-controls">
+                                    <Accordion.Trigger>
+                                        <div className="flex items-center gap-2">
+                                            <Settings className="text-default-400" size={16} />
+                                            <span className="text-small font-semibold">Agency Controls</span>
+                                        </div>
+                                    </Accordion.Trigger>
+                                    <Accordion.Panel>
+                                    <div className="flex flex-col gap-6 py-2 px-1">
+                                         <Switch 
+                                            isSelected={clientVisible}
+                                            onChange={(e) => setClientVisible(e)}
+                                            size="sm"
+                                        >
+                                            <div className="flex flex-col">
+                                                 <span className="text-small text-default-500">Visible to Client</span>
+                                            </div>
+                                        </Switch>
+                                        
+                                        <div className="flex flex-col gap-3">
+                                            <Slider 
+                                                defaultValue={techScore} 
+                                                minValue={1} 
+                                                maxValue={5} 
+                                                step={1}
+
+                                                value={techScore}
+                                                onChange={(v) => setTechScore(Array.isArray(v) ? v[0] : v)}
+                                            >
+                                                <Label className="text-sm font-medium text-default-500">Technical Complexity</Label>
+                                                <div className="flex justify-between text-[10px] text-default-400 mt-1">
+                                                    <span>Simple</span>
+                                                    <span>Complex</span>
+                                                </div>
+                                                <Slider.Track>
+                                                    <Slider.Fill />
+                                                    <Slider.Thumb />
+                                                </Slider.Track>
+                                            </Slider>
+                                        </div>
+                                    </div>
+                                    </Accordion.Panel>
+                                </Accordion.Item>
+                            </Accordion>
                         </div>
                     </div>
                 </Modal.Body>
                 
                 <Modal.Footer className="justify-between">
                      <Button 
-                        variant="danger" 
+                        className="bg-danger text-danger-foreground" 
                         onPress={handleDelete}
                         isDisabled={deletePending || isPending}
                     >
@@ -304,7 +363,7 @@ export default function IssueDetailsModal({
                         <Button variant="ghost" onPress={handleClose}>
                             Cancel
                         </Button>
-                        <Button variant="primary" type="submit" isPending={isPending}>
+                        <Button className="bg-primary text-white" type="submit" isPending={isPending}>
                             Save Changes
                         </Button>
                     </div>

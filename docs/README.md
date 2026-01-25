@@ -10,14 +10,16 @@
 
 ```
 docs/
-├── PRD.md                          # Product Requirements Document
 ├── README.md                       # Este arquivo (índice)
 ├── 01-architecture/                # Arquitetura técnica
 │   ├── stack.md                    # Tech stack e versões
 │   ├── structure.md                # Estrutura de pastas
-│   └── db-schema.md                # Schema do banco de dados ✨ ATUALIZADO
+│   ├── db-schema.md                # Schema do banco de dados ✨ ATUALIZADO
+│   └── agency-module.md            # ✨ NOVO - Arquitetura de Agência (God Mode/Invites)
 ├── 02-features/                    # Status de features
-│   └── status.md                   # PRD vs Realidade
+│   ├── auth-flow.md                # ✨ NOVO - Fluxos de Autenticação e Convites
+│   ├── kyrie-report-spec.md        # ✨ NOVO - Spec do Relatório de Valor
+│   └── status.md                   # Status de Implementação
 ├── 02-guides/                      # Guias de implementação
 │   ├── auth.md                     # Autenticação
 │   ├── realtime.md                 # Supabase Realtime
@@ -37,20 +39,23 @@ docs/
 
 ### Para Desenvolvedores
 
-| Documento                                            | Descrição                       |
-| ---------------------------------------------------- | ------------------------------- |
-| [stack.md](./01-architecture/stack.md)               | Tecnologias e versões           |
-| [structure.md](./01-architecture/structure.md)       | Estrutura de pastas             |
-| [db-schema.md](./01-architecture/db-schema.md)       | Schema do banco (MCP-validated) |
-| [server-actions.md](./02-guides/server-actions.md)   | Referência de Actions           |
-| [heroui-v3.md](./02-guides/heroui-v3.md)             | **NOVO** Compound Components    |
-| [troubleshooting.md](./02-guides/troubleshooting.md) | **NOVO** Problemas comuns       |
+| Documento                                                              | Descrição                         |
+| ---------------------------------------------------------------------- | --------------------------------- |
+| [stack.md](./01-architecture/stack.md)                                 | Tecnologias e versões             |
+| [structure.md](./01-architecture/structure.md)                         | Estrutura de pastas               |
+| [db-schema.md](./01-architecture/db-schema.md)                         | Schema do banco (MCP-validated)   |
+| [backend-architecture.md](./01-architecture/backend-architecture.md)   | **NOVO** Supabase & Actions       |
+| [frontend-architecture.md](./01-architecture/frontend-architecture.md) | **NOVO** Components & Styling     |
+| [server-actions.md](./02-guides/server-actions.md)                     | Referência de Actions             |
+| [development-workflow.md](./02-guides/development-workflow.md)         | **NOVO** Feature Lifecycle        |
+| [heroui-v3.md](./02-guides/heroui-v3.md)                               | **NOVO** Compound Components      |
+| [troubleshooting.md](./02-guides/troubleshooting.md)                   | **NOVO** Problemas comuns         |
+| [agency-module.md](./01-architecture/agency-module.md)                 | **NOVO** Entenda God Mode/Invites |
 
 ### Para Agentes AI
 
 | Documento                                            | Quando Usar                            |
 | ---------------------------------------------------- | -------------------------------------- |
-| [PRD.md](./PRD.md)                                   | Entender visão geral e requisitos      |
 | [status.md](./02-features/status.md)                 | Ver o que já foi implementado          |
 | [db-schema.md](./01-architecture/db-schema.md)       | **LEIA PRIMEIRO** antes de queries SQL |
 | [heroui-v3.md](./02-guides/heroui-v3.md)             | **LEIA PRIMEIRO** antes de criar UI    |

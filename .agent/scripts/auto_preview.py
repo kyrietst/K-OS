@@ -15,6 +15,12 @@ import sys
 import time
 import json
 import signal
+import os
+# FIX PARA GOOGLE IDX: Forçar definição de HOME se estiver faltando
+if 'HOME' not in os.environ:
+    # No IDX, o usuário padrão é geralmente 'user' e a pasta é /home/user
+    os.environ['HOME'] = "/home/user"
+
 import argparse
 import subprocess
 from pathlib import Path

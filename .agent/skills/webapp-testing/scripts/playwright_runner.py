@@ -3,12 +3,19 @@
 Skill: webapp-testing
 Script: playwright_runner.py
 Purpose: Run basic Playwright browser tests
-Usage: python playwright_runner.py <url> [--screenshot]
+Usage: python playwright_runner.py <url> [--screenshot] [--collapse]
 Output: JSON with page info, health status, and optional screenshot path
 Note: Requires playwright (pip install playwright && playwright install chromium)
 Screenshots: Saved to system temp directory (auto-cleaned by OS)
 """
 import sys
+import os
+
+# FIX PARA GOOGLE IDX: Forçar definição de HOME se estiver faltando
+if 'HOME' not in os.environ:
+    # No IDX, o usuário padrão é geralmente 'user' e a pasta é /home/user
+    os.environ['HOME'] = "/home/user"
+
 import json
 import os
 import tempfile
@@ -28,7 +35,7 @@ except ImportError:
     PLAYWRIGHT_AVAILABLE = False
 
 
-def run_basic_test(url: str, take_screenshot: bool = False) -> dict:
+def run_basic_test(url: str, take_screenshot: bool = False, do_collapse: bool = False) -> dict:
     """Run basic browser test on URL."""
     if not PLAYWRIGHT_AVAILABLE:
         return {
@@ -53,6 +60,16 @@ def run_basic_test(url: str, take_screenshot: bool = False) -> dict:
             
             # Navigate
             response = page.goto(url, wait_until="networkidle", timeout=30000)
+            
+            if do_collapse:
+                try:
+                    print("Attempting to collapse sidebar...", file=sys.stderr)
+                    page.wait_for_selector("button[title='Colapsar']", timeout=5000)
+                    page.click("button[title='Colapsar']")
+                    page.wait_for_timeout(1000) # Wait for animation
+                except Exception as e:
+                    print(f"Warning: Collapse interaction failed: {e}", file=sys.stderr)
+                    result["interaction_error"] = str(e)
             
             # Basic info
             result["page"] = {
@@ -85,7 +102,7 @@ def run_basic_test(url: str, take_screenshot: bool = False) -> dict:
                 # Cross-platform: Windows=%TEMP%, Linux/macOS=/tmp
                 screenshot_dir = os.path.join(tempfile.gettempdir(), "maestro_screenshots")
                 os.makedirs(screenshot_dir, exist_ok=True)
-                screenshot_path = os.path.join(screenshot_dir, f"screenshot_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png")
+                screenshot_path = os.path.join(screenshot_dir, f"collapsed_screenshot_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png")
                 page.screenshot(path=screenshot_path, full_page=True)
                 result["screenshot"] = screenshot_path
                 result["screenshot_note"] = "Saved to temp directory (auto-cleaned by OS)"
@@ -152,11 +169,12 @@ def run_accessibility_check(url: str) -> dict:
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print(json.dumps({
-            "error": "Usage: python playwright_runner.py <url> [--screenshot] [--a11y]",
+            "error": "Usage: python playwright_runner.py <url> [--screenshot] [--a11y] [--collapse]",
             "examples": [
                 "python playwright_runner.py https://example.com",
                 "python playwright_runner.py https://example.com --screenshot",
-                "python playwright_runner.py https://example.com --a11y"
+                "python playwright_runner.py https://example.com --a11y",
+                "python playwright_runner.py https://example.com --screenshot --collapse"
             ]
         }, indent=2))
         sys.exit(1)
@@ -164,10 +182,11 @@ if __name__ == "__main__":
     url = sys.argv[1]
     take_screenshot = "--screenshot" in sys.argv
     check_a11y = "--a11y" in sys.argv
+    do_collapse = "--collapse" in sys.argv
     
     if check_a11y:
         result = run_accessibility_check(url)
     else:
-        result = run_basic_test(url, take_screenshot)
+        result = run_basic_test(url, take_screenshot, do_collapse)
     
     print(json.dumps(result, indent=2))

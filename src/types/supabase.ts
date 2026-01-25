@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -49,6 +49,44 @@ export type Database = {
           },
         ]
       }
+      invites: {
+        Row: {
+          id: string
+          workspace_id: string
+          email: string
+          role: Database["public"]["Enums"]["user_role"]
+          token: string
+          expires_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          workspace_id: string
+          email: string
+          role: Database["public"]["Enums"]["user_role"]
+          token?: string
+          expires_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          workspace_id?: string
+          email?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          token?: string
+          expires_at?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invites_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       issues: {
         Row: {
           assignee_id: string | null
@@ -65,6 +103,8 @@ export type Database = {
           title: string
           updated_at: string
           workspace_id: string
+          client_visible: boolean
+          technical_effort_score: number
         }
         Insert: {
           assignee_id?: string | null
@@ -81,6 +121,8 @@ export type Database = {
           title: string
           updated_at?: string
           workspace_id: string
+          client_visible?: boolean
+          technical_effort_score?: number
         }
         Update: {
           assignee_id?: string | null
@@ -97,6 +139,8 @@ export type Database = {
           title?: string
           updated_at?: string
           workspace_id?: string
+          client_visible?: boolean
+          technical_effort_score?: number
         }
         Relationships: [
           {

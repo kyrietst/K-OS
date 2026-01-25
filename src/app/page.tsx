@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from "@heroui/react";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -8,10 +9,12 @@ export default function Home() {
       <h1 className="text-4xl font-bold text-foreground">KyrieOS</h1>
       <p className="text-large text-default-500">Operating System for Agencies</p>
       <div className="flex gap-4">
-        <Button variant="primary">
-          Get Started
-        </Button>
-        <Button variant="secondary">
+        <Link href="/login">
+          <Button className="bg-primary text-white">
+            Get Started
+          </Button>
+        </Link>
+        <Button variant="ghost">
           Documentation
         </Button>
       </div>

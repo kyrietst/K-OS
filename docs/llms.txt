@@ -1,0 +1,23 @@
+# KyrieOS
+> Operating System for Agencies - Built with Next.js 16, Supabase, and HeroUI v3.
+
+## Core Files
+- [src/app/layout.tsx]: Root layout and styling context.
+- [src/app/dashboard/layout.tsx]: Dashboard layout (Server) with Auth checks.
+- [src/app/dashboard/sidebar.tsx]: Main navigation component (Complex UI).
+- [src/app/dashboard/sidebar-wrapper.tsx]: Client Boundary for Sidebar (Hydration Fix).
+- [docs/]: Project documentation.
+
+## Architecture Patterns
+- **Hydration Safety**: We use `next/dynamic` with `ssr: false` for complex Client interactive components (Sidebar) to prevent extension conflicts. [Read ADR-001](docs/01-architecture/ADR-001-hydration-strategy.md).
+- **Sidebar Logic**: Split into Layout provides Data -> Wrapper provides Client Context -> Logic provides UI. [Read Sidebar Arch](docs/01-architecture/SIDEBAR_ARCHITECTURE.md).
+- **Styling**: Tailwind CSS v4 + HeroUI v3. Dark/Light mode supported via `next-themes`.
+
+## Key Concepts
+- **Workspace-First**: All data is scoped to a Workspace (`workspaces` table).
+- **Client-Only Components**: UI elements that float, popup, or use browser APIs must be wrapped or dynamically imported.
+- **Authentication**: Supabase Auth (SSR + Client).
+
+## Development
+- **Environment**: Google IDX ready (requires $HOME patch for Playwright).
+- **Preview**: `npm run dev` (Turbopack enabled).

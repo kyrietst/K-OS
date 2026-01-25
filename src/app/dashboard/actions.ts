@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 
 export type ActionState = {
   message?: string
@@ -124,6 +125,8 @@ export async function createIssue(prevState: ActionState, formData: FormData) {
   const workspace_id = formData.get('workspace_id') as string
   const workspace_slug = formData.get('workspace_slug') as string
   const project_identifier = formData.get('project_identifier') as string
+  const client_visible = formData.get('client_visible') === 'on'
+  const technical_effort_score = parseInt(formData.get('technical_effort_score') as string) || 1
 
   const errors: ActionState['errors'] = {}
 
@@ -161,7 +164,9 @@ export async function createIssue(prevState: ActionState, formData: FormData) {
       workspace_id,
       assignee_id: user?.id,
       sequence_id: nextSequenceId,
-      status: 'backlog'
+      status: 'backlog',
+      client_visible,
+      technical_effort_score
     })
 
   if (error) {
@@ -213,6 +218,8 @@ export async function updateIssueDetails(
   const priority = formData.get('priority') as string
   const assigneeId = formData.get('assignee_id') as string
   const dueDate = formData.get('due_date') as string
+  const client_visible = formData.get('client_visible') === 'on'
+  const technical_effort_score = parseInt(formData.get('technical_effort_score') as string)
 
   // Validation
   const errors: ActionState['errors'] = {}
@@ -229,8 +236,11 @@ export async function updateIssueDetails(
     title,
     priority: priority || 'none',
     status: status || 'backlog',
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
+    client_visible
   }
+  
+  if (technical_effort_score) updates.technical_effort_score = technical_effort_score
 
   if (description !== null) updates.description = { content: description }
   if (assigneeId && assigneeId !== 'unassigned') updates.assignee_id = assigneeId
@@ -565,3 +575,107 @@ export async function deleteProject(
   redirect(`/dashboard/${workspaceSlug}`)
 }
 
+export async function createInviteAction(
+  prevState: ActionState,
+  formData: FormData
+) {
+  const supabase = await createClient()
+  const email = formData.get('email') as string
+  const role = formData.get('role') as "admin" | "member" | "client"
+  const workspaceId = formData.get('workspace_id') as string
+  
+  const errors: ActionState['errors'] = {}
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errors.email = ['Email inválido']
+  }
+  
+  if (!role) {
+    errors.role = ['Role é necessária']
+  }
+
+  if (Object.keys(errors).length > 0) return { errors }
+
+  // Auth & Permission Check
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { message: 'Unauthorized' }
+
+  const { data: membership } = await supabase
+    .from('workspace_members')
+    .select('role')
+    .eq('workspace_id', workspaceId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!membership || membership.role !== 'admin') {
+    return { message: 'Apenas admins podem criar convites.' }
+  }
+
+  // Insert Invite
+  const { data: invite, error } = await supabase
+    .from('invites')
+    .insert({
+        workspace_id: workspaceId,
+        email,
+        role
+    })
+    .select('token')
+    .single()
+
+  if (error) {
+    return { message: 'Erro ao criar convite: ' + error.message }
+  }
+
+  // Construct Link
+  const headersList = await headers()
+  const host = headersList.get('host') || 'localhost:3000'
+  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https'
+  const inviteLink = `${protocol}://${host}/invite/${invite.token}`
+
+  return { 
+    message: 'success', 
+    data: { inviteLink } // We pass this back to client
+  }
+}
+
+export async function acceptInviteAction(token: string) {
+  const supabase = await createClient()
+  
+  // 1. Get current user
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+     return { message: 'Not authenticated', code: 'UNAUTHENTICATED' }
+  }
+
+  // 2. Validate Token using RPC (Privileged)
+  const { data: invite, error } = await (supabase.rpc as any)('get_invite_by_token', { 
+    lookup_token: token 
+  })
+
+  // get_invite_by_token returns JSON. Supabase types might not know this.
+  // data: { id: string, token: string, ... }
+  
+  if (error || !invite) {
+      console.error('get_invite_by_token error:', error)
+      return { message: 'Convite inválido ou expirado.' }
+  }
+
+  // 3. Redeem using RPC (Atomic: Insert Member + Delete Invite)
+  const { data: redemptionResult, error: redeemError } = await (supabase.rpc as any)('redeem_invite', {
+      lookup_token: token,
+      target_user_id: user.id
+  })
+
+  if (redeemError) {
+      console.error('redeem_invite error:', redeemError)
+      return { message: 'Erro ao aceitar convite: ' + redeemError.message }
+  }
+
+  const workspaceSlug = (redemptionResult as any)?.workspaceSlug
+
+  if (!workspaceSlug) {
+      return { message: 'Sucesso, mas falha ao obter redirecionamento.' }
+  }
+
+  return { message: 'success', workspaceSlug }
+}

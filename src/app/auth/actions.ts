@@ -35,3 +35,25 @@ export async function getCurrentUser() {
   
   return user
 }
+
+export async function signInWithGoogleAction() {
+  const supabase = await createClient()
+  const headersList = await import('next/headers').then(mod => mod.headers())
+  const origin = headersList.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${origin}/auth/callback`,
+    },
+  })
+
+  if (error) {
+    console.error('Google Sign In error:', error.message)
+    return { error: error.message }
+  }
+
+  if (data.url) {
+    redirect(data.url)
+  }
+}
