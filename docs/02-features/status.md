@@ -28,7 +28,7 @@ Este documento lista o status atual das features do KyrieOS.
 | Tailwind CSS v4            | Sim | ✅     | Com Ambient Lights        |
 | HeroUI v3                  | Sim | ✅     | v3.0.0-beta.3             |
 | shadcn/ui                  | Sim | ❌     | Removido intencionalmente |
-| Supabase configurado       | Sim | ✅     | SSR + Client              |
+| Supabase Auth (Client)     | Sim | ✅     | Login + Logout funcional  |
 
 ---
 
@@ -45,20 +45,20 @@ Este documento lista o status atual das features do KyrieOS.
 | Tabela `issues`            | Sim | ✅     | Com sequence_id + Realtime |
 | RLS habilitado             | Sim | ✅     | Todas as tabelas           |
 | Supabase Auth (Email)      | Sim | ✅     | Login + Logout funcional   |
-| Supabase Auth (Google)     | Sim | ❌     | Não configurado            |
+| Supabase Auth (Google)     | Sim | ✅     | `signInWithGoogleAction`   |
 
 ---
 
 ### Fase 2: Layout Shell
 
-| Feature                  | PRD | Status | Notas                     |
-| ------------------------ | --- | ------ | ------------------------- |
-| Sidebar colapsável       | Sim | 🔶     | Funcional, não colapsável |
-| Glassmorphism Design     | Sim | ✅     | Com Ambient Lights        |
-| Workspace Switcher       | Sim | ✅     |                           |
-| Navegação entre Projetos | Sim | ✅     | Via URL params            |
-| User Profile na Sidebar  | Sim | ✅     | Dados reais do Supabase   |
-| Botão de Logout          | Sim | ✅     | signOutAction funcional   |
+| Feature                  | PRD | Status | Notas                   |
+| ------------------------ | --- | ------ | ----------------------- |
+| Sidebar colapsável       | Sim | ✅     | Funcional `sidebar.tsx` |
+| Glassmorphism Design     | Sim | ✅     | Com Ambient Lights      |
+| Workspace Switcher       | Sim | ✅     |                         |
+| Navegação entre Projetos | Sim | ✅     | Via URL params          |
+| User Profile na Sidebar  | Sim | ✅     | Dados reais do Supabase |
+| Botão de Logout          | Sim | ✅     | signOutAction funcional |
 
 ---
 
@@ -138,12 +138,10 @@ Este documento lista o status atual das features do KyrieOS.
 
 ---
 
-## 🔴 Features do PRD NÃO Implementadas
+## 🔴 Features Pendentes / Futuras
 
 | Feature                              | Prioridade | Complexidade |
 | ------------------------------------ | ---------- | ------------ |
-| Login com Google OAuth               | Alta       | Baixa        |
-| Sidebar colapsável                   | Média      | Baixa        |
 | Burn-down chart                      | Baixa      | Média        |
 | Upload de imagens (Supabase Storage) | Média      | Média        |
 | Filtros avançados (nuqs)             | Média      | Média        |

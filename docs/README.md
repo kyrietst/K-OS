@@ -88,11 +88,11 @@ Modules View:      ✅ COMPLETO
 - ✅ Analytics Dashboard
 - ✅ Toast feedback (sonner)
 - ✅ Glassmorphism UI
+- ✅ Google OAuth (via `signInWithGoogleAction`)
+- ✅ Sidebar colapsável
 
 ### Não Implementado
 
-- ❌ Google OAuth
-- ❌ Sidebar colapsável
 - ❌ Burn-down chart
 - ❌ Upload de imagens
 
