@@ -9,7 +9,7 @@ interface KanbanCardProps {
   issue: {
     id: string
     title: string
-    sequence_id: number
+    sequence_id: number | null
     priority: "urgent" | "high" | "medium" | "low" | "none" | null
     due_date?: string | null
     assignee?: {

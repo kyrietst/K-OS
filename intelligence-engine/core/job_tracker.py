@@ -46,26 +46,49 @@ class Job:
         }
 
 
-# In-memory storage (WARNING: lost on restart)
-_JOBS: Dict[str, Job] = {}
+from core.supabase import get_supabase_client
+from datetime import datetime
 
+# Supabase Persistence Implementation
 
-def create_job(job_type: str) -> Job:
+def create_job(job_type: str, workspace_id: Optional[str] = None) -> Job:
     """
-    Creates a new job and stores it in memory.
+    Creates a new job in Supabase.
     Returns the created Job instance.
     """
-    job = Job(job_type)
-    _JOBS[job.id] = job
-    return job
+    client = get_supabase_client()
+    data = {
+        "type": job_type,
+        "workspace_id": workspace_id,
+        "status": JobStatus.PENDING,
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    
+    # Execute insert and get single row back
+    # Note: Supabase-py uses .execute() which returns response
+    response = client.table("jobs").insert(data).execute()
+    
+    if not response.data:
+        raise Exception("Failed to create job in Supabase")
+        
+    record = response.data[0]
+    return _record_to_job(record)
 
 
 def get_job(job_id: str) -> Optional[Job]:
     """
-    Retrieves a job by ID.
-    Returns None if job not found.
+    Retrieves a job by ID from Supabase.
     """
-    return _JOBS.get(job_id)
+    client = get_supabase_client()
+    try:
+        response = client.table("jobs").select("*").eq("id", job_id).execute()
+        if response.data and len(response.data) > 0:
+            return _record_to_job(response.data[0])
+        return None
+    except Exception as e:
+        print(f"[JobTracker] Error getting job {job_id}: {e}")
+        return None
 
 
 def update_job(
@@ -75,23 +98,53 @@ def update_job(
     error: Optional[str] = None
 ):
     """
-    Updates job status, result, and error message.
-    Updates timestamp to current time.
+    Updates job status in Supabase.
     """
-    if job := _JOBS.get(job_id):
-        job.status = status
-        if result is not None:
-            job.result = result
-        if error is not None:
-            job.error = error
-        job.updated_at = datetime.utcnow()
+    client = get_supabase_client()
+    update_data = {
+        "status": status,
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    
+    if result is not None:
+        update_data["result"] = result
+    if error is not None:
+        update_data["error"] = error
+        
+    try:
+        client.table("jobs").update(update_data).eq("id", job_id).execute()
+    except Exception as e:
+        print(f"[JobTracker] Error updating job {job_id}: {e}")
 
 
 def list_jobs(limit: int = 10) -> list[Job]:
     """
-    Returns most recent jobs (for debugging).
-    Sorted by created_at descending.
+    Returns recent jobs from Supabase.
     """
-    jobs = list(_JOBS.values())
-    jobs.sort(key=lambda j: j.created_at, reverse=True)
-    return jobs[:limit]
+    client = get_supabase_client()
+    try:
+        response = client.table("jobs").select("*").order("created_at", desc=True).limit(limit).execute()
+        return [_record_to_job(r) for r in response.data]
+    except Exception as e:
+        print(f"[JobTracker] Error listing jobs: {e}")
+        return []
+
+def _record_to_job(record: dict) -> Job:
+    """Map DB record to Job object."""
+    job = Job(record["type"])
+    job.id = record["id"]
+    job.status = JobStatus(record["status"])
+    job.result = record.get("result")
+    job.error = record.get("error")
+    # Parse timestamps might be needed depending on usage, 
+    # but currently Job to_dict expects basic types or manages them?
+    # Job class init creates now(), we override:
+    # Supabase returns ISO strings, so we can store them directly or parse
+    # For MVP consistency with existing class which uses datetime objects:
+    try:
+        job.created_at = datetime.fromisoformat(record["created_at"].replace('Z', '+00:00'))
+        job.updated_at = datetime.fromisoformat(record["updated_at"].replace('Z', '+00:00'))
+    except:
+        pass # Keep defaults if parse fails
+        
+    return job

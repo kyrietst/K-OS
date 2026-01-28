@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import CreateProjectModal from '@/components/projects/create-project-modal'
 import { Card, Link } from '@heroui/react'
 
+import { CFOSection } from '@/components/dashboard/CFOSection'
+
 export default async function WorkspacePage({ params }: { params: Promise<{ workspaceSlug: string }> }) {
   const { workspaceSlug } = await params
   const supabase = await createClient()
@@ -32,6 +34,8 @@ export default async function WorkspacePage({ params }: { params: Promise<{ work
          <CreateProjectModal workspaceId={workspace.id} />
       </div>
 
+      <CFOSection workspaceId={workspace.id} />
+
       {projects && projects.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {projects.map((project) => (
@@ -51,11 +55,11 @@ export default async function WorkspacePage({ params }: { params: Promise<{ work
                         </Card.Header>
                         <Card.Content>
                             <p className="text-sm text-default-400">
-                                {(project.description as any)?.content || (typeof project.description === 'string' ? project.description : 'No description')}
+                                {project.description || 'No description'}
                             </p>
                         </Card.Content>
                         <Card.Footer className="text-tiny text-default-400">
-                            Updated {new Date(project.created_at).toLocaleDateString()}
+                            Updated {project.created_at ? new Date(project.created_at).toLocaleDateString() : 'N/A'}
                         </Card.Footer>
                     </Card>
                 </Link>

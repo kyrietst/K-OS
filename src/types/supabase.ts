@@ -9,35 +9,129 @@ export type Json =
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.1"
-  }
   public: {
     Tables: {
-      cycles: {
+      ai_actions: {
         Row: {
-          created_at: string
-          end_date: string | null
+          action: string
+          agent_name: string
+          created_at: string | null
           id: string
-          name: string
-          project_id: string
-          start_date: string | null
+          metadata: Json | null
+          reasoning: string
+          status: string
+          task_id: string | null
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
-          end_date?: string | null
+          action: string
+          agent_name: string
+          created_at?: string | null
           id?: string
-          name: string
-          project_id: string
-          start_date?: string | null
+          metadata?: Json | null
+          reasoning: string
+          status?: string
+          task_id?: string | null
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
-          end_date?: string | null
+          action?: string
+          agent_name?: string
+          created_at?: string | null
           id?: string
-          name?: string
+          metadata?: Json | null
+          reasoning?: string
+          status?: string
+          task_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_actions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contracts: {
+        Row: {
+          client_name: string
+          created_at: string | null
+          end_date: string | null
+          hourly_cost: number | null
+          id: string
+          is_active: boolean | null
+          monthly_value: number
+          start_date: string
+          updated_at: string | null
+          workspace_id: string
+        }
+        Insert: {
+          client_name: string
+          created_at?: string | null
+          end_date?: string | null
+          hourly_cost?: number | null
+          id?: string
+          is_active?: boolean | null
+          monthly_value: number
+          start_date: string
+          updated_at?: string | null
+          workspace_id: string
+        }
+        Update: {
+          client_name?: string
+          created_at?: string | null
+          end_date?: string | null
+          hourly_cost?: number | null
+          id?: string
+          is_active?: boolean | null
+          monthly_value?: number
+          start_date?: string
+          updated_at?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cycles: {
+        Row: {
+          created_at: string | null
+          end_date: string
+          id: string
+          name: string | null
+          project_id: string
+          start_date: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_date: string
+          id?: string
+          name?: string | null
+          project_id: string
+          start_date: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string
+          id?: string
+          name?: string | null
           project_id?: string
-          start_date?: string | null
+          start_date?: string
+          status?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -49,98 +143,60 @@ export type Database = {
           },
         ]
       }
-      invites: {
-        Row: {
-          id: string
-          workspace_id: string
-          email: string
-          role: Database["public"]["Enums"]["user_role"]
-          token: string
-          expires_at: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          workspace_id: string
-          email: string
-          role: Database["public"]["Enums"]["user_role"]
-          token?: string
-          expires_at?: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          workspace_id?: string
-          email?: string
-          role?: Database["public"]["Enums"]["user_role"]
-          token?: string
-          expires_at?: string
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "invites_workspace_id_fkey"
-            columns: ["workspace_id"]
-            isOneToOne: false
-            referencedRelation: "workspaces"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
       issues: {
         Row: {
           assignee_id: string | null
-          created_at: string
+          client_visible: boolean | null
+          created_at: string | null
           cycle_id: string | null
-          description: Json | null
+          description: string | null
           due_date: string | null
           id: string
           module_id: string | null
+          parent_id: string | null
           priority: Database["public"]["Enums"]["priority"] | null
           project_id: string
-          sequence_id: number
-          status: string | null
+          sequence_id: number | null
+          status: string
+          technical_effort_score: number | null
           title: string
-          updated_at: string
-          workspace_id: string
-          client_visible: boolean
-          technical_effort_score: number
+          updated_at: string | null
         }
         Insert: {
           assignee_id?: string | null
-          created_at?: string
+          client_visible?: boolean | null
+          created_at?: string | null
           cycle_id?: string | null
-          description?: Json | null
+          description?: string | null
           due_date?: string | null
           id?: string
           module_id?: string | null
+          parent_id?: string | null
           priority?: Database["public"]["Enums"]["priority"] | null
           project_id: string
-          sequence_id?: number
-          status?: string | null
+          sequence_id?: number | null
+          status?: string
+          technical_effort_score?: number | null
           title: string
-          updated_at?: string
-          workspace_id: string
-          client_visible?: boolean
-          technical_effort_score?: number
+          updated_at?: string | null
         }
         Update: {
           assignee_id?: string | null
-          created_at?: string
+          client_visible?: boolean | null
+          created_at?: string | null
           cycle_id?: string | null
-          description?: Json | null
+          description?: string | null
           due_date?: string | null
           id?: string
           module_id?: string | null
+          parent_id?: string | null
           priority?: Database["public"]["Enums"]["priority"] | null
           project_id?: string
-          sequence_id?: number
-          status?: string | null
+          sequence_id?: number | null
+          status?: string
+          technical_effort_score?: number | null
           title?: string
-          updated_at?: string
-          workspace_id?: string
-          client_visible?: boolean
-          technical_effort_score?: number
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -158,10 +214,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "issues_module_id_fkey"
-            columns: ["module_id"]
+            foreignKeyName: "issues_parent_id_fkey"
+            columns: ["parent_id"]
             isOneToOne: false
-            referencedRelation: "modules"
+            referencedRelation: "issues"
             referencedColumns: ["id"]
           },
           {
@@ -171,8 +227,86 @@ export type Database = {
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      jobs: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          result: Json | null
+          status: string
+          type: string
+          updated_at: string
+          workspace_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          result?: Json | null
+          status?: string
+          type: string
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          result?: Json | null
+          status?: string
+          type?: string
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
           {
-            foreignKeyName: "issues_workspace_id_fkey"
+            foreignKeyName: "jobs_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      landing_pages: {
+        Row: {
+          config: Json
+          created_at: string | null
+          custom_domain: string | null
+          id: string
+          is_published: boolean | null
+          slug: string
+          title: string
+          updated_at: string | null
+          workspace_id: string
+        }
+        Insert: {
+          config: Json
+          created_at?: string | null
+          custom_domain?: string | null
+          id?: string
+          is_published?: boolean | null
+          slug: string
+          title: string
+          updated_at?: string | null
+          workspace_id: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string | null
+          custom_domain?: string | null
+          id?: string
+          is_published?: boolean | null
+          slug?: string
+          title?: string
+          updated_at?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landing_pages_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -182,34 +316,37 @@ export type Database = {
       }
       modules: {
         Row: {
-          created_at: string
+          created_at: string | null
           description: string | null
           id: string
           name: string
           project_id: string
+          status: string
           start_date: string | null
-          status: string | null
           target_date: string | null
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           id?: string
           name: string
           project_id: string
+          status?: string
           start_date?: string | null
-          status?: string | null
           target_date?: string | null
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           id?: string
           name?: string
           project_id?: string
+          status?: string
           start_date?: string | null
-          status?: string | null
           target_date?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -218,7 +355,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       profiles: {
@@ -253,27 +390,30 @@ export type Database = {
       }
       projects: {
         Row: {
-          created_at: string
+          created_at: string | null
           description: string | null
           id: string
           identifier: string
           name: string
+          updated_at: string | null
           workspace_id: string
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           id?: string
           identifier: string
           name: string
+          updated_at?: string | null
           workspace_id: string
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           id?: string
           identifier?: string
           name?: string
+          updated_at?: string | null
           workspace_id?: string
         }
         Relationships: [
@@ -286,22 +426,127 @@ export type Database = {
           },
         ]
       }
+      worklogs: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          hours: number
+          id: string
+          issue_id: string | null
+          logged_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          hours: number
+          id?: string
+          issue_id?: string | null
+          logged_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          hours?: number
+          id?: string
+          issue_id?: string | null
+          logged_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worklogs_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worklogs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspace_invites: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          role: string // Added manual override
+          status: string
+          token: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          role: string // Added manual override
+          status?: string
+          token?: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          role?: string
+          status?: string
+          token?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_invites_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workspace_invites_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workspace_members: {
         Row: {
-          joined_at: string
-          role: string | null
+          created_at: string | null
+          id: string
+          joined_at: string | null
+          role: string
           user_id: string
           workspace_id: string
         }
         Insert: {
-          joined_at?: string
-          role?: string | null
+          created_at?: string | null
+          id?: string
+          joined_at?: string | null
+          role?: string
           user_id: string
           workspace_id: string
         }
         Update: {
-          joined_at?: string
-          role?: string | null
+          created_at?: string | null
+          id?: string
+          joined_at?: string | null
+          role?: string
           user_id?: string
           workspace_id?: string
         }
@@ -325,27 +570,30 @@ export type Database = {
       workspaces: {
         Row: {
           created_at: string
-          created_by: string | null
+          created_by: string
           id: string
           logo_url: string | null
           name: string
           slug: string
+          updated_at: string
         }
         Insert: {
           created_at?: string
-          created_by?: string | null
+          created_by: string
           id?: string
           logo_url?: string | null
           name: string
           slug: string
+          updated_at?: string
         }
         Update: {
           created_at?: string
-          created_by?: string | null
+          created_by?: string
           id?: string
           logo_url?: string | null
           name?: string
           slug?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -362,7 +610,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_worklog_summary: {
+        Args: {
+          workspace_id_param: string
+        }
+        Returns: {
+          client_name: string
+          total_hours: number
+        }[]
+      }
     }
     Enums: {
       priority: "urgent" | "high" | "medium" | "low" | "none"
@@ -374,33 +630,25 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
-
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
-
 export type Tables<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+  PublicTableNameOrOptions extends
+    | keyof (Database["public"]["Tables"] & Database["public"]["Views"])
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+  : PublicTableNameOrOptions extends keyof (Database["public"]["Tables"] &
+        Database["public"]["Views"])
+    ? (Database["public"]["Tables"] &
+        Database["public"]["Views"])[PublicTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -408,24 +656,20 @@ export type Tables<
     : never
 
 export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  PublicTableNameOrOptions extends
+    | keyof Database["public"]["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
+    ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -433,24 +677,20 @@ export type TablesInsert<
     : never
 
 export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  PublicTableNameOrOptions extends
+    | keyof Database["public"]["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
+    ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -458,44 +698,27 @@ export type TablesUpdate<
     : never
 
 export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+  PublicEnumNameOrOptions extends
+    | keyof Database["public"]["Enums"]
+    | { schema: keyof Database },
+  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+> = PublicEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : PublicEnumNameOrOptions extends keyof Database["public"]["Enums"]
+    ? Database["public"]["Enums"][PublicEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    | keyof Database["public"]["CompositeTypes"]
+    | { schema: keyof Database },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof Database["public"]["CompositeTypes"]
+    ? Database["public"]["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
-
-export const Constants = {
-  public: {
-    Enums: {
-      priority: ["urgent", "high", "medium", "low", "none"],
-      user_role: ["admin", "member", "client"],
-    },
-  },
-} as const

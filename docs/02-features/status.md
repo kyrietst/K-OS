@@ -1,3 +1,5 @@
+⚠️ DEPRECATED - Refer to `AUDIT_2026-01-27_WAR_PRD_PREP.md` for current truth
+
 # 📊 Feature Status
 
 > **Última Atualização:** 2026-01-25 **Fonte:** Estado atual do código em `src/`

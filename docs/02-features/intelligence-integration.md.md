@@ -1,3 +1,5 @@
+⚠️ DEPRECATED - Refer to `AUDIT_2026-01-27_WAR_PRD_PREP.md` for current truth
+
 📄 PRD: Integração KyrieBrain Intelligence (FastAPI + CrewAI)
 
 1. Visão Geral Este módulo é o "Lobo Frontal" do KyrieOS. Ele consiste em um

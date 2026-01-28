@@ -30,8 +30,28 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Allow example files
+!.env.example
+
+# Python
+.venv
+__pycache__/
+*.py[cod]
+*$py.class
+intelligence-engine/.env
+
+# Logs
+error_log.txt
+output_*.txt
+tsc_*.txt
 
 # vercel
 .vercel

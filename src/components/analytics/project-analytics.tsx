@@ -160,7 +160,7 @@ export function ProjectAnalytics({ data }: ProjectAnalyticsProps) {
                     <div className="flex flex-col">
                       <span className="text-sm font-medium text-gray-200">{issue.title}</span>
                       <span className="text-xs text-gray-500">
-                        {issue.assignee?.full_name || 'Unassigned'} • Updated {new Date(issue.updated_at).toLocaleDateString()}
+                        {issue.assignee?.full_name || 'Unassigned'} • Updated {issue.updated_at ? new Date(issue.updated_at).toLocaleDateString() : 'N/A'}
                       </span>
                     </div>
                   </div>

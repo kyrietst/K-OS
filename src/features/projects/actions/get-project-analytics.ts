@@ -80,7 +80,7 @@ export async function getProjectAnalytics(projectId: string): Promise<ProjectAna
 
   // Recent Activity (Top 5 recently updated)
   const recentActivity = [...issues]
-    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+    .sort((a, b) => new Date(b.updated_at ?? 0).getTime() - new Date(a.updated_at ?? 0).getTime())
     .slice(0, 5);
 
   return {

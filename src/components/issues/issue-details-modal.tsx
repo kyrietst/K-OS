@@ -55,8 +55,9 @@ export default function IssueDetailsModal({
   projectIdentifier,
   profiles,
   cycles = [],
-  modules = []
-}: IssueDetailsModalProps & { cycles?: any[], modules?: any[] }) {
+  modules = [],
+  isReadOnly = false // Default to false
+}: IssueDetailsModalProps & { cycles?: any[], modules?: any[], isReadOnly?: boolean }) {
   const router = useRouter()
   const [state, formAction, isPending] = useActionState(updateIssueDetails, initialState)
   const [deletePending, setDeletePending] = useState(false)
@@ -85,7 +86,7 @@ export default function IssueDetailsModal({
   }
 
   const handleDelete = async () => {
-    if (!issue) return
+    if (!issue || isReadOnly) return
     if (!confirm('Are you sure you want to delete this issue? This action cannot be undone.')) return
     
     setDeletePending(true)
@@ -113,7 +114,7 @@ export default function IssueDetailsModal({
       <Modal.Backdrop />
       <Modal.Container className="fixed inset-0 z-50 flex items-center justify-center">
         <Modal.Dialog className="sm:max-w-4xl w-full">
-            <form action={formAction} className="contents">
+            <form action={!isReadOnly ? formAction : undefined} className="contents">
                 <input type="hidden" name="issue_id" value={issue.id} />
                 <input type="hidden" name="project_identifier" value={projectIdentifier} />
                 <input type="hidden" name="workspace_slug" value={workspaceSlug} />
@@ -137,22 +138,27 @@ export default function IssueDetailsModal({
                 <Modal.Body className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Left Column: Main Content */}
                     <div className="md:col-span-2 flex flex-col gap-4">
-                        <TextField name="title" aria-label="Issue Title">
+                        <TextField name="title" aria-label="Issue Title" isReadOnly={isReadOnly}>
                             <Input
                                 defaultValue={issue.title}
-                                onChange={(e) => setTitle(e.target.value)}
+                                onChange={(e) => !isReadOnly && setTitle(e.target.value)}
                                 placeholder="Issue Title"
                                 className="font-semibold text-xl border-b-2 border-default-200 focus:border-primary outline-none px-0 py-2 w-full bg-transparent"
+                                readOnly={isReadOnly}
                             />
                         </TextField>
                         
                         <div className="flex flex-col gap-2">
                             <Label className="text-sm font-medium text-default-500">Description</Label>
-                            <RichTextEditor 
-                                content={localDescription} 
-                                onChange={setLocalDescription}
-                                issueTitle={title || issue?.title || 'Tarefa sem título'}
-                            />
+                            {isReadOnly ? (
+                                <div className="prose prose-sm max-w-none text-default-700 bg-default-50 p-4 rounded-lg" dangerouslySetInnerHTML={{ __html: localDescription }} />
+                            ) : (
+                                <RichTextEditor 
+                                    content={localDescription} 
+                                    onChange={setLocalDescription}
+                                    issueTitle={title || issue?.title || 'Tarefa sem título'}
+                                />
+                            )}
                         </div>
 
                          {state.message && (
@@ -169,6 +175,7 @@ export default function IssueDetailsModal({
                             <Select 
                                 name="status" 
                                 defaultSelectedKey={issue.status || 'backlog'}
+                                isDisabled={isReadOnly}
                             >
                                 <Label>Status</Label>
                                 <Select.Trigger>
@@ -191,6 +198,7 @@ export default function IssueDetailsModal({
                             <Select 
                                 name="priority" 
                                 defaultSelectedKey={issue.priority || 'none'}
+                                isDisabled={isReadOnly}
                             >
                                 <Label>Priority</Label>
                                 <Select.Trigger>
@@ -209,6 +217,7 @@ export default function IssueDetailsModal({
                             </Select>
                         </div>
 
+                        {!isReadOnly && (
                         <div className="flex flex-col gap-1.5">
                             <Select 
                                 name="assignee_id" 
@@ -233,8 +242,10 @@ export default function IssueDetailsModal({
                                 </Select.Popover>
                             </Select>
                         </div>
+                        )}
 
-                    <div className="flex flex-col gap-1.5">
+                        {!isReadOnly && (
+                        <div className="flex flex-col gap-1.5">
                             <Select 
                                 name="cycle_id" 
                                 defaultSelectedKey={issue.cycle_id || 'none'}
@@ -262,7 +273,9 @@ export default function IssueDetailsModal({
                                 </Select.Popover>
                             </Select>
                         </div>
+                        )}
 
+                        {!isReadOnly && (
                         <div className="flex flex-col gap-1.5">
                             <Select
                                 name="module_id"
@@ -292,15 +305,17 @@ export default function IssueDetailsModal({
                                 </Select.Popover>
                             </Select>
                         </div>
+                        )}
 
                         <div className="flex flex-col gap-1.5">
-                            <TextField name="due_date">
+                            <TextField name="due_date" isReadOnly={isReadOnly}>
                                 <Label>Due Date</Label>
-                                <Input type="date" defaultValue={issue.due_date || ''} />
+                                <Input type="date" defaultValue={issue.due_date || ''} readOnly={isReadOnly} />
                             </TextField>
                         </div>
 
-                        {/* Agency Controls Accordion */}
+                        {/* Agency Controls Accordion - HIDDEN IN READONLY */}
+                        {!isReadOnly && (
                         <div className="pt-4 border-t border-default-100">
                              <Accordion className="px-0">
                                 <Accordion.Item key="agency-controls">
@@ -314,7 +329,7 @@ export default function IssueDetailsModal({
                                     <div className="flex flex-col gap-6 py-2 px-1">
                                          <Switch 
                                             isSelected={clientVisible}
-                                            onChange={(e) => setClientVisible(e)}
+                                            onChange={(e: any) => setClientVisible(e?.target ? e.target.checked : e)}
                                             size="sm"
                                         >
                                             <div className="flex flex-col">
@@ -348,10 +363,12 @@ export default function IssueDetailsModal({
                                 </Accordion.Item>
                             </Accordion>
                         </div>
+                        )}
                     </div>
                 </Modal.Body>
                 
                 <Modal.Footer className="justify-between">
+                     {!isReadOnly ? (
                      <Button 
                         className="bg-danger text-danger-foreground" 
                         onPress={handleDelete}
@@ -359,13 +376,18 @@ export default function IssueDetailsModal({
                     >
                         {deletePending ? 'Deleting...' : 'Delete Issue'}
                     </Button>
+                    ) : (
+                        <div /> /* Spacer */
+                    )}
                     <div className="flex gap-2">
                         <Button variant="ghost" onPress={handleClose}>
-                            Cancel
+                            {isReadOnly ? 'Close' : 'Cancel'}
                         </Button>
-                        <Button className="bg-primary text-white" type="submit" isPending={isPending}>
-                            Save Changes
-                        </Button>
+                        {!isReadOnly && (
+                            <Button className="bg-primary text-white" type="submit" isPending={isPending}>
+                                Save Changes
+                            </Button>
+                        )}
                     </div>
                 </Modal.Footer>
             </form>

@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     # Server Configuration
     host: str = "0.0.0.0"
     port: int = 8000
+    internal_api_secret: str  # Mandatory for security
     
     model_config = SettingsConfigDict(
         env_file=".env",

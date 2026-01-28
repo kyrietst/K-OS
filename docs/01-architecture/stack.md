@@ -102,11 +102,15 @@ ALTER PUBLICATION supabase_realtime ADD TABLE issues;
 
 ---
 
-## 🤖 AI Integration
+## 🤖 AI Integration (v1.1)
 
-| Feature        | Package  | Versão    |
-| -------------- | -------- | --------- |
-| OpenRouter API | `openai` | `^6.16.0` |
+| Feature          | Technology                | Versão          |
+| ---------------- | ------------------------- | --------------- |
+| **Framework**    | CrewAI                    | Latest (Python) |
+| **Primary LLM**  | Llama-3.3-70b (via Groq)  | -               |
+| **Fallback/BFF** | Gemini 1.5 Flash (Native) | `latest`        |
+| **Orchestrator** | FastAPI Microservice      | -               |
+| **Traceability** | Supabase `ai_actions`     | -               |
 
 ---
 

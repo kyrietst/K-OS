@@ -147,6 +147,58 @@ Tarefas/tickets - coração do sistema.
 
 ---
 
+### `contracts`
+
+Contratos de clientes para análise financeira.
+
+| Coluna          | Tipo          | Nullable | Default             | Descrição          |
+| --------------- | ------------- | -------- | ------------------- | ------------------ |
+| `id`            | uuid          | No       | `gen_random_uuid()` | PK                 |
+| `workspace_id`  | uuid          | No       | —                   | FK para workspaces |
+| `client_name`   | text          | No       | —                   | Nome do cliente    |
+| `monthly_value` | decimal(10,2) | No       | —                   | Valor mensal       |
+| `start_date`    | date          | No       | —                   | Início do contrato |
+| `is_active`     | boolean       | Yes      | `true`              | Contrato ativo?    |
+
+### `worklogs`
+
+Registro de horas para comparação com receita.
+
+| Coluna      | Tipo         | Nullable | Default             | Descrição                 |
+| ----------- | ------------ | -------- | ------------------- | ------------------------- |
+| `id`        | uuid         | No       | `gen_random_uuid()` | PK                        |
+| `issue_id`  | uuid         | Yes      | —                   | FK para issues (opcional) |
+| `user_id`   | uuid         | No       | —                   | FK para profiles          |
+| `hours`     | decimal(5,2) | No       | —                   | Horas trabalhadas         |
+| `logged_at` | timestamptz  | No       | `now()`             | Data do registro          |
+
+### `jobs`
+
+Persistência de tarefas assíncronas (Jobs) do Intelligence Engine.
+
+| Coluna       | Tipo        | Nullable | Default                  | Descrição                   |
+| ------------ | ----------- | -------- | ------------------------ | --------------------------- |
+| `id`         | uuid        | No       | `gen_random_uuid()`      | PK                          |
+| `type`       | text        | No       | —                        | Ex: 'cfo_analysis'          |
+| `status`     | text        | No       | `'pending'`              | pending, running, completed |
+| `result`     | jsonb       | Yes      | —                        | Resultado (findings)        |
+| `error`      | text        | Yes      | —                        | Mensagem de erro            |
+| `created_at` | timestamptz | No       | `timezone('utc', now())` |                             |
+
+### `ai_actions`
+
+Audit Log de decisões tomadas pelos agentes.
+
+| Coluna       | Tipo | Nullable | Default             | Descrição                      |
+| ------------ | ---- | -------- | ------------------- | ------------------------------ |
+| `id`         | uuid | No       | `gen_random_uuid()` | PK                             |
+| `agent_name` | text | No       | —                   | Ex: 'CFOAgent'                 |
+| `action`     | text | No       | —                   | Ex: 'budget_alert'             |
+| `reasoning`  | text | No       | —                   | Explicação do raciocínio (CoT) |
+| `status`     | text | No       | `'pending'`         | Estado da ação                 |
+
+---
+
 ## 🔒 Row Level Security (RLS)
 
 Todas as tabelas têm RLS habilitado.

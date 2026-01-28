@@ -68,3 +68,56 @@ export async function createThing(formData: FormData) {
   1. Change DB Schema (Supabase Dashboard).
   2. Run MCP Tool `generate_typescript_types` (or CLI).
   3. Types update automatically across the app.
+
+---
+
+## 🧠 Intelligence Engine Architecture (New)
+
+Added in Phase 11, the Intelligence Engine handles heavy AI workloads
+asynchronously.
+
+### 1. Hybrid Architecture
+
+- **Next.js (Frontend/BFF):** Handles UI, Auth, and "Triggering" jobs.
+- **FastAPI (Microservice):** Runs CrewAI agents (Python).
+  - **v1.1 Update:** Now uses **Groq (Llama-3.3-70b)** for high-speed inference.
+  - **Traceability:** All actions linked via `original_job_id` metadata.
+- **Supabase (Shared State):** Acts as the "Glue" between Next.js and Python.
+  - Next.js writes to `contracts`/`worklogs`.
+  - Python reads from Supabase.
+  - Python writes results to `jobs` and `ai_actions`.
+  - Next.js reads results via Realtime Subscription.
+
+### 2. Secure Bridge Pattern
+
+Direct communication between Next.js Server Side and FastAPI is protected:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant NextJS as Next.js Route Handler
+    participant FastAPI
+    participant DB as Supabase (Jobs Table)
+
+    User->>NextJS: POST /api/cfo-analyze
+    NextJS->>NextJS: Validate User Session
+    NextJS->>FastAPI: POST /ai/cfo/analyze (Header: X-Internal-Secret)
+    FastAPI->>DB: INSERT INTO jobs (status='pending')
+    FastAPI-->>NextJS: Return { job_id }
+    NextJS-->>User: Return { job_id }
+    
+    par Async Processing
+        FastAPI->>FastAPI: Run CrewAI Agent
+        FastAPI->>DB: UPDATE jobs SET status='completed', result={...}
+    and Realtime UI
+        User->>DB: Subscribe to jobs/ai_actions
+        DB-->>User: Push Updates
+    end
+```
+
+### 3. Fail Fast & Persistence
+
+- **Stateful Jobs:** We moved from in-memory dicts to a `jobs` table to prevent
+  data loss on container restarts (Error 500 fix).
+- **Environment Validation:** Both services crash at startup if secrets are
+  missing, preventing runtime null errors.

@@ -53,5 +53,37 @@ export async function updateSession(request: NextRequest) {
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
   // creating a new Response object with NextResponse.redirect() or NextResponse.next(),
   // make sure to include the cookies from the supabaseResponse object.
+  
+  // ----------------------------------------------------------------------
+  // CLIENT PORTAL SECURITY ENFORCEMENT
+  // ----------------------------------------------------------------------
+  if (user && request.nextUrl.pathname.startsWith('/dashboard')) {
+      const parts = request.nextUrl.pathname.split('/') // ['', 'dashboard', 'slug', ...]
+      if (parts.length >= 3) {
+          const slug = parts[2]
+          // Avoid database hit for static assets or irrelevant paths if possible, but middleware matcher handles most.
+          
+          // Query membership to check if user is a client
+          // Note: This adds DB latency to navigation. Ideally we use Claims.
+          // For now, consistent with requirements.
+          const { data: member } = await supabase
+            .from('workspace_members')
+            .select('role, workspace:workspaces!inner(slug)')
+            .eq('workspace.slug', slug)
+            .eq('user_id', user.id)
+            .single()
+
+          // If user is a CLIENT, they MUST be in /client
+          if (member?.role === 'client') {
+              const minimalPath = `/dashboard/${slug}/client`
+              if (!request.nextUrl.pathname.startsWith(minimalPath)) {
+                   const url = request.nextUrl.clone()
+                   url.pathname = minimalPath
+                   return NextResponse.redirect(url)
+              }
+          }
+      }
+  }
+
   return supabaseResponse
 }

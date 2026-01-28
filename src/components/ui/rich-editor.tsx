@@ -13,7 +13,7 @@ import { ThoughtExtension } from './tiptap-extensions/thought-extension'
 
 // ... existing imports
 
-interface RichTextEditorProps {
+export interface RichTextEditorProps {
   content?: string
   onChange?: (content: string) => void
   placeholder?: string

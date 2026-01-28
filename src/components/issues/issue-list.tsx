@@ -32,13 +32,23 @@ import { useRouter } from 'next/navigation'
 
 // ... existing code ...
 
-export default function IssueList({ issues, projectIdentifier }: { issues: Issue[], projectIdentifier: string }) {
+export default function IssueList({ 
+    issues, 
+    projectIdentifier, 
+    isReadOnly = false,
+    statusLabelMap 
+}: { 
+    issues: Issue[], 
+    projectIdentifier?: string, // Made optional as it might come from issue.project
+    isReadOnly?: boolean,
+    statusLabelMap?: Record<string, string>
+}) {
   const router = useRouter()
   
   if (issues.length === 0) {
       return (
           <div className="w-full border border-dashed border-default-200 rounded-lg p-8 flex flex-col items-center justify-center text-default-400">
-              <p>No issues yet.</p>
+              <p>No issues found.</p>
           </div>
       )
   }
@@ -52,25 +62,26 @@ export default function IssueList({ issues, projectIdentifier }: { issues: Issue
                     <th className="px-4 py-3">Title</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Priority</th>
-                    <th className="px-4 py-3">Assignee</th>
+                    {!isReadOnly && <th className="px-4 py-3">Assignee</th>}
                 </tr>
             </thead>
             <tbody className="divide-y divide-default-100">
                 {issues.map((issue) => (
                     <tr 
                         key={issue.id} 
-                        className="hover:bg-default-50/50 transition-colors cursor-pointer"
-                        onClick={() => router.push(`?view=list&issueId=${issue.id}`)}
+                        className={`transition-colors ${!isReadOnly ? 'hover:bg-default-50/50 cursor-pointer' : ''}`}
+                        onClick={() => !isReadOnly && router.push(`?view=list&issueId=${issue.id}`)}
                     >
                         <td className="px-4 py-3 font-mono text-default-500 text-xs">
-                            {projectIdentifier}-{issue.sequence_id}
+                            {/* Use project identifier if available in issue (joined), else fallback to prop */}
+                            {(issue as any).project?.identifier || projectIdentifier}-{issue.sequence_id}
                         </td>
                         <td className="px-4 py-3 font-medium">
                             {issue.title}
                         </td>
                         <td className="px-4 py-3">
                             <Chip className="capitalize" color={statusColorMap[issue.status || 'backlog']} size="sm" variant="soft">
-                                {issue.status || 'Backlog'}
+                                {statusLabelMap ? (statusLabelMap[issue.status || 'backlog'] || issue.status) : (issue.status || 'Backlog')}
                             </Chip>
                         </td>
                         <td className="px-4 py-3">
@@ -78,9 +89,11 @@ export default function IssueList({ issues, projectIdentifier }: { issues: Issue
                                 {issue.priority || 'None'}
                             </Chip>
                         </td>
-                        <td className="px-4 py-3 text-default-500">
-                             {(issue as any).assignee?.email || 'Unassigned'}
-                        </td>
+                        {!isReadOnly && (
+                            <td className="px-4 py-3 text-default-500">
+                                 {(issue as any).assignee?.email || 'Unassigned'}
+                            </td>
+                        )}
                     </tr>
                 ))}
             </tbody>

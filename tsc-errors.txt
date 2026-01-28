@@ -1,6 +1,0 @@
-﻿src/components/issues/create-issue-modal.tsx(93,29): error TS2322: Type '{ children: Element[]; name: string; className: string; placeholder: string; defaultSelectedKeys: string[]; }' is not assignable to type 'IntrinsicAttributes & SelectRootProps<object, "single">'.
-  Property 'defaultSelectedKeys' does not exist on type 'IntrinsicAttributes & SelectRootProps<object, "single">'. Did you mean 'defaultSelectedKey'?
-src/components/kanban/kanban-board.tsx(52,52): error TS2322: Type 'Issue' is not assignable to type '{ id: string; title: string; sequence_id: number; priority: "none" | "low" | "medium" | "high" | "urgent"; due_date?: string | null | undefined; assignee?: { full_name: string | null; email: string; } | null | undefined; }'.
-  Types of property 'priority' are incompatible.
-    Type '"none" | "low" | "medium" | "high" | "urgent" | null' is not assignable to type '"none" | "low" | "medium" | "high" | "urgent"'.
-      Type 'null' is not assignable to type '"none" | "low" | "medium" | "high" | "urgent"'.

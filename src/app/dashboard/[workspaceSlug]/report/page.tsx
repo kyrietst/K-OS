@@ -7,14 +7,14 @@ import { notFound } from 'next/navigation'
 export const dynamic = 'force-dynamic'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     workspaceSlug: string
-  }
+  }>
 }
 
 export default async function ReportPage({ params }: PageProps) {
   const supabase = await createClient()
-  const { workspaceSlug } = params
+  const { workspaceSlug } = await params
 
   // 1. Fetch Workspace
   const { data: workspace } = await supabase
@@ -194,7 +194,7 @@ export default async function ReportPage({ params }: PageProps) {
                 {/* DATE */}
                 <div className="text-right w-24 pt-1">
                    <p className="text-xs font-medium text-zinc-500">
-                     {new Date(issue.updated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                     {issue.updated_at ? new Date(issue.updated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '-'}
                    </p>
                 </div>
               </div>
